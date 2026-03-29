@@ -19,19 +19,19 @@ int Interogare::detectTip() {
     if (strcmp(parametrii[0], "select") == 0)
         return TIP_SELECT;
 
-    // -student add column nume
+    // --student add column nume
     if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
         strcmp(parametrii[1], "add") == 0 &&
         strcmp(parametrii[2], "column") == 0)
         return TIP_ADD;
 
-    // -student remove column nume
+    // --student remove column nume
     if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
         strcmp(parametrii[1], "remove") == 0 &&
         strcmp(parametrii[2], "column") == 0)
         return TIP_REMOVE;
 
-    // -student insert ...
+    // --student insert ...
     if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
         strcmp(parametrii[1], "insert") == 0)
         return TIP_INSERT;
