@@ -5,7 +5,7 @@
 #include <cstring>
 #include <stdexcept>
 #include "BazaDeDate.h"
-using namespace std;
+//using namespace std;
 
 #define TIP_INVALID  0
 #define TIP_CREATE   1

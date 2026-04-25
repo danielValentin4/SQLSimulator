@@ -10,7 +10,8 @@ using namespace std;
 //g++ - I include src / main.cpp src / Coloana.cpp src / Tabela.cpp src / BazaDeDate.cpp src / Interogare.cpp src / Rand.cpp - o test.exe
 
 int main(int argc, char* argv[]) {
-    BazaDeDate baza("mydb", nullptr, 0, 1);
+    vector<Tabela> tabele;
+    BazaDeDate baza("mydb", tabele , 1);
     baza.incarca();
     Interogare i(argv, argc);
     if (!i) {

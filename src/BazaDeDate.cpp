@@ -5,12 +5,11 @@ int BazaDeDate::bazeDeDateCreate = 0;
 BazaDeDate::BazaDeDate() : idBaza(0) {
     denumireBaza = new char[strlen("N/A") + 1];
     strcpy_s(denumireBaza, strlen("N/A") + 1, "N/A");
-    tabele = nullptr;
-    nrTabele = 0;
-    bazeDeDateCreate++;
+    tabele.reserve(5);
+    BazaDeDate::bazeDeDateCreate++;
 }
 
-BazaDeDate::BazaDeDate(const char* denumireBaza, Tabela* tabele, int nrTabele, int idBaza) : idBaza(idBaza) {
+BazaDeDate::BazaDeDate(const char* denumireBaza, vector<Tabela> tabele, int idBaza) : idBaza(idBaza), tabele(tabele) {
     if (denumireBaza != nullptr) {
         this->denumireBaza = new char[strlen(denumireBaza) + 1];
         strcpy_s(this->denumireBaza, strlen(denumireBaza) + 1, denumireBaza);
@@ -19,17 +18,10 @@ BazaDeDate::BazaDeDate(const char* denumireBaza, Tabela* tabele, int nrTabele, i
         this->denumireBaza = new char[strlen("N/A") + 1];
         strcpy_s(this->denumireBaza, strlen("N/A") + 1, "N/A");
     }
-    this->nrTabele = nrTabele;
-    if (nrTabele > 0 && tabele != nullptr) {
-        this->tabele = new Tabela[nrTabele];
-        for (int i = 0; i < nrTabele; i++)
-            this->tabele[i] = tabele[i];
-    }
-    else this->tabele = nullptr;
-    bazeDeDateCreate++;
+    BazaDeDate::bazeDeDateCreate++;
 }
 
-BazaDeDate::BazaDeDate(const BazaDeDate& b) : idBaza(b.idBaza) {
+BazaDeDate::BazaDeDate(const BazaDeDate& b) : idBaza(b.idBaza), tabele(b.tabele) {
     if (b.denumireBaza != nullptr) {
         this->denumireBaza = new char[strlen(b.denumireBaza) + 1];
         strcpy_s(this->denumireBaza, strlen(b.denumireBaza) + 1, b.denumireBaza);
@@ -38,25 +30,17 @@ BazaDeDate::BazaDeDate(const BazaDeDate& b) : idBaza(b.idBaza) {
         this->denumireBaza = new char[strlen("N/A") + 1];
         strcpy_s(this->denumireBaza, strlen("N/A") + 1, "N/A");
     }
-    this->nrTabele = b.nrTabele;
-    if (b.nrTabele > 0 && b.tabele != nullptr) {
-        this->tabele = new Tabela[b.nrTabele];
-        for (int i = 0; i < b.nrTabele; i++)
-            this->tabele[i] = b.tabele[i];
-    }
-    else this->tabele = nullptr;
-    bazeDeDateCreate++;
+    BazaDeDate::bazeDeDateCreate++;
 }
 
 BazaDeDate::~BazaDeDate() {
     if (denumireBaza != nullptr) delete[] denumireBaza;
-    if (tabele != nullptr) delete[] tabele;
+    BazaDeDate::bazeDeDateCreate--;
 }
 
 BazaDeDate& BazaDeDate::operator=(const BazaDeDate& b) {
     if (this != &b) {
         if (denumireBaza != nullptr) delete[] denumireBaza;
-        if (tabele != nullptr) delete[] tabele;
         if (b.denumireBaza != nullptr) {
             this->denumireBaza = new char[strlen(b.denumireBaza) + 1];
             strcpy_s(this->denumireBaza, strlen(b.denumireBaza) + 1, b.denumireBaza);
@@ -65,52 +49,46 @@ BazaDeDate& BazaDeDate::operator=(const BazaDeDate& b) {
             this->denumireBaza = new char[strlen("N/A") + 1];
             strcpy_s(this->denumireBaza, strlen("N/A") + 1, "N/A");
         }
-        this->nrTabele = b.nrTabele;
-        if (b.nrTabele > 0 && b.tabele != nullptr) {
-            this->tabele = new Tabela[b.nrTabele];
-            for (int i = 0; i < b.nrTabele; i++)
-                this->tabele[i] = b.tabele[i];
-        }
-        else this->tabele = nullptr;
+        tabele = b.tabele;
     }
     return *this;
 }
 
 Tabela& BazaDeDate::operator[](int index) {
-    if (index >= 0 && index < nrTabele) return tabele[index];
+    if (index >= 0 && index < tabele.size()) return tabele.at(index);
     throw runtime_error("Index invalid");
 }
 
 BazaDeDate BazaDeDate::operator+(const Tabela& t) {
     BazaDeDate copie = *this;
-    Tabela* temp = new Tabela[copie.nrTabele + 1];
+    /*Tabela* temp = new Tabela[copie.nrTabele + 1];
     for (int i = 0; i < copie.nrTabele; i++)
         temp[i] = copie.tabele[i];
     temp[copie.nrTabele] = t;
     delete[] copie.tabele;
     copie.tabele = temp;
-    copie.nrTabele++;
+    copie.nrTabele++;*/
+    if (t.getNrColoane()) {
+        copie.tabele.emplace_back(t);
+    }
     return copie;
 }
 
-bool BazaDeDate::operator==(const BazaDeDate& b) {
+bool BazaDeDate::operator==(const BazaDeDate& b) const {
     if (strcmp(denumireBaza, b.denumireBaza) != 0) return false;
-    if (nrTabele != b.nrTabele) return false;
-    for (int i = 0; i < nrTabele; i++)
-        if (!(tabele[i] == b.tabele[i])) return false;
-    return true;
+    return(tabele == b.tabele);
 }
 
 bool BazaDeDate::operator!() {
-    return nrTabele == 0;
+    return tabele.size();
 }
 
 bool BazaDeDate::operator<(const BazaDeDate& b) {
-    return nrTabele < b.nrTabele;
+    return tabele.size() < b.tabele.size();
 }
 
 Tabela* BazaDeDate::getTabela(const char* nume) {
-    for (int i = 0; i < nrTabele; i++) {
+    for (size_t i = 0; i < tabele.size(); i++) {
         char* n = tabele[i].getNumeTabela();
         if (strcmp(n, nume) == 0) {
             delete[] n;
@@ -123,7 +101,7 @@ Tabela* BazaDeDate::getTabela(const char* nume) {
 
 void BazaDeDate::createTable(const char* nume) {
     if (getTabela(nume) != nullptr) {
-        cout << "Tabela exista deja!" << endl;
+        cout << "Tabela exista deja!" << '\n';
         return;
     }
     Tabela noua;
@@ -131,36 +109,47 @@ void BazaDeDate::createTable(const char* nume) {
     
     *this = *this + noua;
    
-    cout << "Tabela " << nume << " creata!" << endl;
+    cout << "Tabela " << nume << " creata!" << '\n';
 }
 
 bool BazaDeDate::dropTable(const char* nume) {
-    int index = -1;
-    for (int i = 0; i < nrTabele; i++) {
+    /*int index = -1;*/
+    for (size_t i = 0; i < tabele.size(); i++) {
         char* n = tabele[i].getNumeTabela();
         if (strcmp(n, nume) == 0) {
-            index = i;
+            tabele.erase(tabele.begin() + i);
             delete[] n;
-            break;
+            
+            return true;
         }
         delete[] n;
     }
-    if (index == -1) return false;
+    /*if (index == -1) return false;
     Tabela* temp = new Tabela[nrTabele - 1];
     for (int i = 0, j = 0; i < nrTabele; i++)
         if (i != index) temp[j++] = tabele[i];
     delete[] tabele;
     tabele = temp;
     nrTabele--;
-    return true;
+    return true;*/
+    return false;
 }
 
 
 //folosim fisiere binare pt retinerea informatiilor
-void scrieString(ofstream& f, const char* str) {
-    int len = str ? strlen(str) : 0;
+void scrieString(ofstream& f, string str) {
+    int len;
+    if (str.length() > 0) {
+        len = str.length();
+    }
+    else {
+        len = 0;
+    }
+    char* strC = new char[str.length() + 1];
+    strcpy_s(strC, str.length() + 1, str.c_str());
+    //int len = str ? strlen(str) : 0;
     f.write((char*)&len, sizeof(int));
-    if (len > 0) f.write(str, len);
+    if (len > 0) f.write(strC, len);
 }
 
 char* citesteString(ifstream& f) {
@@ -180,12 +169,13 @@ void BazaDeDate::salveaza() {
 
     ofstream f(numeFisier, ios::binary);
     if (!f.is_open()) {
-        cout << "Eroare la deschiderea fisierului!" << endl;
+        cout << "Eroare la deschiderea fisierului!" << '\n';
         return;
     }
 
+    size_t nrTabele = tabele.size();
     scrieString(f, denumireBaza);
-    f.write((char*)&nrTabele, sizeof(int));
+    f.write((char*)&nrTabele, sizeof(size_t));
 
     for (int i = 0; i < nrTabele; i++) {
         char* numeT = tabele[i].getNumeTabela();
@@ -208,7 +198,7 @@ void BazaDeDate::salveaza() {
         }
     }
     f.close();
-    cout << "Salvat in " << numeFisier << endl;
+    cout << "Salvat in " << numeFisier << '\n';
 }
 
 void BazaDeDate::incarca() {
@@ -218,46 +208,50 @@ void BazaDeDate::incarca() {
 
     ifstream f(numeFisier, ios::binary);
     if (!f.is_open()) {
-        cout << "Fisierul nu exista, se porneste cu baza goala." << endl;
+        cout << "Fisierul nu exista, se porneste cu baza goala." << '\n';
         return;
     }
 
-    if (tabele != nullptr) delete[] tabele;
+    /*if (tabele != nullptr) delete[] tabele;*/
     if (denumireBaza != nullptr) delete[] denumireBaza;
-
+    size_t nrTabele = tabele.size();
     denumireBaza = citesteString(f);
-    f.read((char*)&nrTabele, sizeof(int));
-    tabele = new Tabela[nrTabele];
+    f.read((char*)&nrTabele, sizeof(size_t));
+    tabele.reserve(nrTabele);
 
     for (int i = 0; i < nrTabele; i++) {
         char* numeT = citesteString(f);
         int nrCol = 0;
         f.read((char*)&nrCol, sizeof(int));
 
-        Coloana* cols = new Coloana[nrCol];
+        //Coloana* cols = new Coloana[nrCol];
+        vector<Coloana> cols(nrCol);
         for (int j = 0; j < nrCol; j++) {
             char* numeC = citesteString(f);
             int sz = 0;
             f.read((char*)&sz, sizeof(int));
-            char** valori = new char* [sz];
-            for (int k = 0; k < sz; k++)
-                valori[k] = citesteString(f);
-            cols[j] = Coloana(numeC, valori, sz);
-            for (int k = 0; k < sz; k++) delete[] valori[k];
-            delete[] valori;
+            //char** valori = new char* [sz];
+            vector<string> valori;
+            valori.reserve(sz);
+            for (int k = 0; k < sz; k++) {
+                char* buffer = citesteString(f);
+                valori.emplace_back(buffer);
+                delete[] buffer;
+            }
+            cols[j] = Coloana(numeC, valori);
             delete[] numeC;
         }
-        tabele[i] = Tabela(numeT, cols, nrCol, i);
-        delete[] cols;
+        tabele.emplace_back(numeT, cols, i);
+        
         delete[] numeT;
     }
     f.close();
 }
 
 ostream& operator<<(ostream& out, const BazaDeDate& b) {
-    out << "Baza de date: " << b.denumireBaza << endl;
-    out << "Nr tabele: " << b.nrTabele << endl;
-    for (int i = 0; i < b.nrTabele; i++)
+    out << "Baza de date: " << b.denumireBaza << '\n';
+    out << "Nr tabele: " << b.tabele.size() << '\n';
+    for (size_t i = 0; i < b.tabele.size(); i++)
         out << b.tabele[i];
     return out;
 }
@@ -269,19 +263,17 @@ istream& operator>>(istream& in, BazaDeDate& b) {
     if (b.denumireBaza != nullptr) delete[] b.denumireBaza;
     b.denumireBaza = new char[buffer.length() + 1];
     strcpy_s(b.denumireBaza, buffer.length() + 1, buffer.c_str());
+    size_t nrTabele;
     cout << "Nr tabele: ";
-    in >> b.nrTabele;
-    if (b.tabele != nullptr) delete[] b.tabele;
-    if (b.nrTabele > 0) {
-        b.tabele = new Tabela[b.nrTabele];
-        for (int i = 0; i < b.nrTabele; i++) {
+    in >> nrTabele;
+    
+    if (nrTabele > 0) {
+        b.tabele.resize(nrTabele);
+        for (int i = 0; i < nrTabele; i++) {
             cout << "Tabela " << i << ": ";
             in >> b.tabele[i];
         }
     }
-    else {
-        b.nrTabele = 0;
-        b.tabele = nullptr;
-    }
+    
     return in;
 }

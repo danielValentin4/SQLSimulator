@@ -6,24 +6,25 @@
 #include <cstring>
 #include <stdexcept>
 #include "Tabela.h"
-using namespace std;
-
+//using namespace std;
+using std::ofstream, std::ifstream, std::ios;
 class BazaDeDate {
 private:
-    Tabela* tabele;
-    int nrTabele;
+    //Tabela* tabele;
+    //int nrTabele;
+    vector<Tabela> tabele;
     char* denumireBaza;
     const int idBaza;
     static int bazeDeDateCreate;
 public:
     BazaDeDate();
-    BazaDeDate(const char*, Tabela*, int, int);
+    BazaDeDate(const char*, vector<Tabela> , int);
     BazaDeDate(const BazaDeDate&);
     ~BazaDeDate();
     BazaDeDate& operator=(const BazaDeDate&);
     Tabela& operator[](int);
     BazaDeDate operator+(const Tabela&);
-    bool operator==(const BazaDeDate&);
+    bool operator==(const BazaDeDate&) const;
     bool operator!();
     bool operator<(const BazaDeDate&);
     Tabela* getTabela(const char*);

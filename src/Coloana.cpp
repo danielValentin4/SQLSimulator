@@ -5,11 +5,10 @@ int Coloana::marimeDefault = 1;
 Coloana::Coloana(){
     nume = new char[strlen("N/A") + 1];
     strcpy_s(nume, strlen("N/A") + 1, "N/A");
-    date = nullptr;
-    size = 0;
+    date.reserve(5);
 }
 
-Coloana::Coloana(const char* nume, char** date, int size)  {
+Coloana::Coloana(const char* nume, vector<string> date) : date(date)  {
     if (nume != nullptr) {
         this->nume = new char[strlen(nume) + 1];
         strcpy_s(this->nume, strlen(nume) + 1, nume);
@@ -18,21 +17,9 @@ Coloana::Coloana(const char* nume, char** date, int size)  {
         this->nume = new char[strlen("N/A") + 1];
         strcpy_s(this->nume, strlen("N/A") + 1, "N/A");
     }
-    if (size > 0 && date != nullptr) {
-        this->size = size;
-        this->date = new char* [size];
-        for (int i = 0; i < size; i++) {
-            this->date[i] = new char[strlen(date[i]) + 1];
-            strcpy_s(this->date[i], strlen(date[i]) + 1, date[i]);
-        }
-    }
-    else {
-        this->size = 0;
-        this->date = nullptr;
-    }
 }
 
-Coloana::Coloana(const Coloana& c){
+Coloana::Coloana(const Coloana& c) : date(c.date)  {
     if (c.nume != nullptr) {
         this->nume = new char[strlen(c.nume) + 1];
         strcpy_s(this->nume, strlen(c.nume) + 1, c.nume);
@@ -41,29 +28,14 @@ Coloana::Coloana(const Coloana& c){
         nume = new char[strlen("N/A") + 1];
         strcpy_s(nume, strlen("N/A") + 1, "N/A");
     }
-    if (c.size > 0 && c.date != nullptr) {
-        this->size = c.size;
-        this->date = new char* [c.size];
-        for (int i = 0; i < c.size; i++) {
-            this->date[i] = new char[strlen(c.date[i]) + 1];
-            strcpy_s(this->date[i], strlen(c.date[i]) + 1, c.date[i]);
-        }
-    }
-    else {
-        this->date = nullptr;
-        this->size = 0;
-    }
+    
 }
 
 Coloana::~Coloana() {
     if (nume != nullptr) delete[] nume;
-    if (date != nullptr) {
-        for (int i = 0; i < size; i++) delete[] date[i];
-        delete[] date;
-    }
 }
 
-char* Coloana::getNume() {
+char* Coloana::getNume() const {
     char* copie = new char[strlen(nume) + 1];
     strcpy_s(copie, strlen(nume) + 1, nume);
     return copie;
@@ -81,37 +53,25 @@ void Coloana::setNume(const char* nume) {
     }
 }
 
-Coloana& Coloana::operator=(const Coloana& c) {
+Coloana& Coloana::operator=(const Coloana& c){
     if (this != &c) {
         if (nume != nullptr) delete[] nume;
-        if (date != nullptr) {
-            for (int i = 0; i < size; i++) delete[] date[i];
-            delete[] date;
-        }
         if (c.nume != nullptr) {
             this->nume = new char[strlen(c.nume) + 1];
             strcpy_s(this->nume, strlen(c.nume) + 1, c.nume);
         }
-        else this->nume = nullptr;
-        if (c.size > 0 && c.date != nullptr) {
-            this->size = c.size;
-            this->date = new char* [c.size];
-            for (int i = 0; i < c.size; i++) {
-                this->date[i] = new char[strlen(c.date[i]) + 1];
-                strcpy_s(this->date[i], strlen(c.date[i]) + 1, c.date[i]);
-            }
-        }
         else {
-            this->size = 0;
-            this->date = nullptr;
+            this->nume = new char[strlen("N/A") + 1];
+            strcpy_s(this->nume, strlen("N/A") + 1, "N/A");
         }
+        this->date = c.date;
     }
     return *this;
 }
 
 Coloana Coloana::operator+(const char* valoare) {
     Coloana copie = *this;
-    char** temp = new char* [copie.size + 1];
+    /*char** temp = new char* [copie.size + 1];
     for (int i = 0; i < copie.size; i++) {
         temp[i] = new char[strlen(copie.date[i]) + 1];
         strcpy_s(temp[i], strlen(copie.date[i]) + 1, copie.date[i]);
@@ -121,45 +81,60 @@ Coloana Coloana::operator+(const char* valoare) {
     for (int i = 0; i < copie.size; i++) delete[] copie.date[i];
     delete[] copie.date;
     copie.date = temp;
-    copie.size++;
+    copie.size++;*/
+    if (valoare != nullptr) {
+        copie.date.emplace_back(valoare);
+    }
+    else {
+        copie.date.emplace_back("");
+    }
     return copie;
 }
 
-Coloana::operator int() {
-    return size;
+Coloana& Coloana::operator+=(string valoare) {
+    this->date.emplace_back(valoare);
+    return *this;
 }
 
-bool Coloana::operator!() {
-    return size <= 0;
+
+Coloana::operator int() const {
+    return date.size();
 }
 
-bool Coloana::operator==(const Coloana& c) {
+bool Coloana::operator!() const {
+    return date.empty();
+}
+
+bool Coloana::operator==(const Coloana& c) const {
     if (strcmp(nume, c.nume) != 0) return false;
-    if (size != c.size) return false;
-    for (int i = 0; i < size; i++)
-        if (strcmp(date[i], c.date[i]) != 0) return false;
-    return true;
+    return date == c.date;
 }
 
 bool Coloana::operator>(const Coloana& c) {
-    return this->size > c.size;
+    return this->date.size() > c.date.size();
 }
 
-char*& Coloana::operator[](int index) {
-    if (index < 0 || index >= size)
+string& Coloana::operator[](int index) {
+    if (index < 0 || index >= date.size())
         throw runtime_error("Index invalid");
-    return date[index];
+    return date.at(index);
+}
+
+const string& Coloana::operator[](int index) const {
+    if (index < 0 || index >= date.size())
+        throw runtime_error("Index invalid");
+    return date.at(index);
 }
 
 ostream& operator<<(ostream& out, const Coloana& c) {
-    out << "Nume coloana: " << c.nume << endl;
+    out << "Nume coloana: " << c.nume << '\n';
     out << "Valori: ";
-    if (c.date != nullptr && c.size > 0)
-        for (int i = 0; i < c.size; i++)
+    if (c.date.size() > 0)
+        for (int i = 0; i < c.date.size(); i++)
             out << c.date[i] << " ";
     else
         out << "Nu exista valori";
-    out << endl;
+    out << '\n';
     return out;
 }
 
@@ -171,26 +146,16 @@ istream& operator>>(istream& in, Coloana& c) {
     c.nume = new char[buffer.length() + 1];
     strcpy_s(c.nume, buffer.length() + 1, buffer.c_str());
 
-    int oldSize = c.size;
+    int sz = 0;
     cout << "Size-ul vectorului de date: ";
-    in >> c.size;
-
-    if (c.date != nullptr) {
-        for (int i = 0; i < oldSize; i++) delete[] c.date[i];
-        delete[] c.date;
-    }
-    if (c.size > 0) {
-        c.date = new char* [c.size];
-        for (int i = 0; i < c.size; i++) {
+    in >> sz;
+    c.date.clear();
+    if (sz > 0) {
+        for (int i = 0; i < sz; i++) {
             cout << "Valoarea " << i + 1 << ": ";
             in >> buffer;
-            c.date[i] = new char[buffer.length() + 1];
-            strcpy_s(c.date[i], buffer.length() + 1, buffer.c_str());
+            c.date.emplace_back(buffer);
         }
-    }
-    else {
-        c.size = 0;
-        c.date = nullptr;
     }
     return in;
 }

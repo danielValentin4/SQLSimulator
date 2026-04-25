@@ -19,19 +19,19 @@ int Interogare::detectTip() {
     if (strcmp(parametrii[0], "select") == 0)
         return TIP_SELECT;
 
-    // --student add column nume
+    // -student add column nume
     if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
         strcmp(parametrii[1], "add") == 0 &&
         strcmp(parametrii[2], "column") == 0)
         return TIP_ADD;
 
-    // --student remove column nume
+    // -student remove column nume
     if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
         strcmp(parametrii[1], "remove") == 0 &&
         strcmp(parametrii[2], "column") == 0)
         return TIP_REMOVE;
 
-    // --student insert ...
+    // -student insert ...
     if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
         strcmp(parametrii[1], "insert") == 0)
         return TIP_INSERT;
@@ -129,35 +129,35 @@ bool Interogare::operator==(const Interogare& i) {
 
 // debugging cu tip , parametrii
 void Interogare::executa(BazaDeDate& baza) {
-    cout << "TIP: " << tipInterogare << endl;
+    cout << "TIP: " << tipInterogare << '\n';
     cout << "Parametrii: ";
     for (int i = 0; i < nrParametrii; i++)
-        cout << parametrii[i] << " ";
-    cout << endl;
+        cout << i  << ":" << parametrii[i] << '\n';
+    cout << '\n';
 
     switch (tipInterogare) {
 
     case TIP_CREATE: {
         
-        if (nrParametrii < 3) { cout << "Comanda invalida!" << endl; return; }
+        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return; }
         baza.createTable(parametrii[2]);
         break;
     }
 
     case TIP_DROP: {
         
-        if (nrParametrii < 3) { cout << "Comanda invalida!" << endl; return; }
+        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return; }
         bool ok = baza.dropTable(parametrii[2]);
-        if (ok) cout << "Tabela stearsa!" << endl;
-        else cout << "Tabela nu exista!" << endl;
+        if (ok) cout << "Tabela stearsa!" << '\n';
+        else cout << "Tabela nu exista!" << '\n';
         break;
     }
 
     case TIP_SELECT: {
         
-        if (nrParametrii < 2) { cout << "Comanda invalida!" << endl; return; }
+        if (nrParametrii < 2) { cout << "Comanda invalida!" << '\n'; return; }
         Tabela* t = baza.getTabela(parametrii[1]);
-        if (t == nullptr) { cout << "Tabela nu exista!" << endl; return; }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
         if (nrParametrii == 2) {
             // afiseaza toata tabela
             cout << *t;
@@ -170,7 +170,7 @@ void Interogare::executa(BazaDeDate& baza) {
                 cout << r;
             }
             catch (...) {
-                cout << "Index invalid!" << endl;
+                cout << "Index invalid!" << '\n';
             }
         }
         break;
@@ -178,97 +178,95 @@ void Interogare::executa(BazaDeDate& baza) {
 
     case TIP_ADD: {
         
-        if (nrParametrii < 4) { cout << "Comanda invalida!" << endl; return; }
+        if (nrParametrii < 4) { cout << "Comanda invalida!" << '\n'; return; }
         const char* numeTabela = parametrii[0] + 2; 
         Tabela* t = baza.getTabela(numeTabela);
-        if (t == nullptr) { cout << "Tabela nu exista!" << endl; return; }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
         t->addColumn(parametrii[3]);
-        cout << "Coloana adaugata!" << endl;
+        cout << "Coloana adaugata!" << '\n';
         break;
     }
 
     case TIP_REMOVE: {
         
-        if (nrParametrii < 4) { cout << "Comanda invalida!" << endl; return; }
+        if (nrParametrii < 4) { cout << "Comanda invalida!" << '\n'; return; }
         const char* numeTabela = parametrii[0] + 2;
         Tabela* t = baza.getTabela(numeTabela);
-        if (t == nullptr) { cout << "Tabela nu exista!" << endl; return; }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
         t->removeColumn(parametrii[3]);
-        cout << "Coloana stearsa!" << endl;
+        cout << "Coloana stearsa!" << '\n';
         break;
     }
 
     case TIP_INSERT: {
         
-        if (nrParametrii < 3) { cout << "Comanda invalida!" << endl; return; }
+        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return; }
         const char* numeTabela = parametrii[0] + 2;
         Tabela* t = baza.getTabela(numeTabela);
-        if (t == nullptr) { cout << "Tabela nu exista!" << endl; return; }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
 
         int nrValori = nrParametrii - 2; 
-        int idRand = atoi(parametrii[2]);
+        
 
         
-        char** valori = new char* [nrValori];
-        char** numeCol = new char* [nrValori];
+        //char** valori = new char* [nrValori];
+        vector<string> valori;
+        valori.reserve(nrValori);
         for (int i = 0; i < nrValori; i++) {
-            valori[i] = parametrii[i + 2];
-            Coloana& c = (*t)[i];
-            numeCol[i] = c.getNume();
+            valori.emplace_back(parametrii[i + 2]);
         }
-        Rand r(idRand, valori, nrValori, numeCol);
+        Rand r(0, valori);
         t->insertRand(r);
-        for (int i = 0; i < nrValori; i++) delete[] numeCol[i];
-        delete[] valori;
-        delete[] numeCol;
-        cout << "Rand inserat!" << endl;
+        
+        
+        cout << "Rand inserat!" << '\n';
         break;
     }
 
 
     case TIP_HELP: {
-        cout << "===============================================" << endl;
-        cout << "         SQLSimulator - Comenzi disponibile   " << endl;
-        cout << "===============================================" << endl;
-        cout << endl;
-        cout << "Creare tabela:" << endl;
-        cout << "  aplicatie.exe create table <numeTabel>" << endl;
-        cout << endl;
-        cout << "Adaugare coloana:" << endl;
-        cout << "  aplicatie.exe --<numeTabel> add column <numeColoana>" << endl;
-        cout << endl;
-        cout << "Stergere coloana:" << endl;
-        cout << "  aplicatie.exe --<numeTabel> remove column <numeColoana>" << endl;
-        cout << endl;
-        cout << "Inserare rand:" << endl;
-        cout << "  aplicatie.exe --<numeTabel> -<numeColoana> insert <id> <val1> <val2> ..." << endl;
-        cout << endl;
-        cout << "Afisare tabela completa:" << endl;
-        cout << "  aplicatie.exe select <numeTabel>" << endl;
-        cout << endl;
-        cout << "Afisare rand specific:" << endl;
-        cout << "  aplicatie.exe select <numeTabel> <index>" << endl;
-        cout << endl;
-        cout << "Stergere tabela:" << endl;
-        cout << "  aplicatie.exe drop table <numeTabel>" << endl;
-        cout << endl;
-        cout << "Ajutor:" << endl;
-        cout << "  aplicatie.exe --help" << endl;
-        cout << "===============================================" << endl;
+        cout << "===============================================" << '\n';
+        cout << "         SQLSimulator - Comenzi disponibile   " << '\n';
+        cout << "===============================================" << '\n';
+        cout << '\n';
+        cout << "Creare tabela:" << '\n';
+        cout << "  aplicatie.exe create table <numeTabel>" << '\n';
+        cout << '\n';
+        cout << "Adaugare coloana:" << '\n';
+        cout << "  aplicatie.exe -<numeTabel> add column <numeColoana>" << '\n';
+        cout << '\n';
+        cout << "Stergere coloana:" << '\n';
+        cout << "  aplicatie.exe -<numeTabel> remove column <numeColoana>" << '\n';
+        cout << '\n';
+        cout << "Inserare rand:" << '\n';
+        cout << "  aplicatie.exe -<numeTabel> insert <id> <val1> <val2> ..." << '\n';
+        cout << '\n';
+        cout << "Afisare tabela completa:" << '\n';
+        cout << "  aplicatie.exe select <numeTabel>" << '\n';
+        cout << '\n';
+        cout << "Afisare rand specific:" << '\n';
+        cout << "  aplicatie.exe select <numeTabel> <index>" << '\n';
+        cout << '\n';
+        cout << "Stergere tabela:" << '\n';
+        cout << "  aplicatie.exe drop table <numeTabel>" << '\n';
+        cout << '\n';
+        cout << "Ajutor:" << '\n';
+        cout << "  aplicatie.exe --help" << '\n';
+        cout << "===============================================" << '\n';
         break;
     }
 
     default:
-        cout << "Comanda necunoscuta!" << endl;
+        cout << "Comanda necunoscuta!" << '\n';
         break;
     }
 }
 
 ostream& operator<<(ostream& out, const Interogare& i) {
-    out << "Tip interogare: " << i.tipInterogare << endl;
+    out << "Tip interogare: " << i.tipInterogare << '\n';
     out << "Parametrii: ";
     for (int j = 0; j < i.nrParametrii; j++)
         out << i.parametrii[j] << " ";
-    out << endl;
+    out << '\n';
     return out;
 }
