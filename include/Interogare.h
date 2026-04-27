@@ -15,6 +15,7 @@
 #define TIP_SELECT   5
 #define TIP_DROP     6
 #define TIP_HELP     7
+#define TIP_WHERE    8
 
 
 class Interogare {

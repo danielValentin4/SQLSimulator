@@ -68,9 +68,9 @@ BazaDeDate BazaDeDate::operator+(const Tabela& t) {
     delete[] copie.tabele;
     copie.tabele = temp;
     copie.nrTabele++;*/
-    if (t.getNrColoane()) {
-        copie.tabele.emplace_back(t);
-    }
+    
+    copie.tabele.emplace_back(t);
+    
     return copie;
 }
 

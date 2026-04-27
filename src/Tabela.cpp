@@ -126,7 +126,7 @@ Coloana* Tabela::getColoana(const char* nume) {
 Rand Tabela::getRand(int index) const {
     if (index < 0) throw runtime_error("Index invalid");
    
-    for (int i = 0; i < coloane.size(); i++)
+    for (size_t i = 0; i < coloane.size(); i++)
         if (index >= (int)coloane[i]) throw runtime_error("Index invalid");
     vector<string> valori(coloane.size());
     /*char** valori = new char* [nrColoane];
@@ -137,6 +137,50 @@ Rand Tabela::getRand(int index) const {
     Rand r(index, move(valori));
     return r;
 }
+
+bool verificaConditie(const string& valoareColoana, const string& op, const string& valoareData) {
+    if (op == "=") return valoareColoana == valoareData;
+    if (op == "like") return valoareColoana.find(valoareData) != string::npos;
+
+    try {
+        float valColoanaFloat = std::stof(valoareColoana);
+        float valDataFloat = std::stof(valoareData);
+
+        if (op == ">") return valColoanaFloat > valDataFloat;
+        if (op == "<") return valColoanaFloat < valDataFloat;
+        if (op == ">=") return valColoanaFloat >= valDataFloat;
+        if (op == "<=") return valColoanaFloat <= valDataFloat;
+    }
+    catch (...) {
+        throw runtime_error("Clauza where folosita gresit. Pentru comparare string folositi like. Pt valori folositi operatori aritmetici.");
+    }
+    return false;
+}
+
+
+void Tabela::selectRand(const char* coloana, const char* op, const char* valoare) {
+    Coloana* c = getColoana(coloana);
+    if (c == nullptr) {
+        cout << "Coloana" << coloana << " nu exista" << "\n";
+    }
+    cout << "ID\t";
+    for (size_t i = 0; i < coloane.size(); i++) {
+        char* nume = coloane[i].getNume();
+        cout << nume << "\t";
+        delete[] nume;
+    }
+    cout << "\n";
+
+    int nrRanduri = coloane.empty() ? 0 : int(coloane[0]);
+    for (int i = 0; i < nrRanduri; i++) {
+        string valoareColoana = (*c)[i];
+        if (verificaConditie(valoareColoana, op, valoare)) {
+            cout << i << "\t" << getRand(i);
+        }
+    }
+
+}
+
 
 void Tabela::addColumn(const char* nume) {
     /*Coloana noua(nume, );

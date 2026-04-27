@@ -8,7 +8,7 @@
 #include "Coloana.h"
 #include "Rand.h"
 //using namespace std;
-
+using std::stof;
 class Tabela {
 private:
     char* numeTabela;
@@ -34,6 +34,7 @@ public:
     void addColumn(const char*);
     void removeColumn(const char*);
     void insertRand(const Rand&);
+    void selectRand(const char*, const char*, const char*);
     friend ostream& operator<<(ostream&,const Tabela&);
     friend istream& operator>>(istream&, Tabela&);
 };

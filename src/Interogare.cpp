@@ -19,26 +19,35 @@ int Interogare::detectTip() {
     if (strcmp(parametrii[0], "select") == 0)
         return TIP_SELECT;
 
-    // -student add column nume
-    if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
-        strcmp(parametrii[1], "add") == 0 &&
-        strcmp(parametrii[2], "column") == 0)
+    // alter student add column nume
+    if (strcmp(parametrii[0], "alter") == 0 && 
+        nrParametrii >= 3 &&
+        strcmp(parametrii[2], "add") == 0 &&
+        strcmp(parametrii[3], "column") == 0)
         return TIP_ADD;
 
-    // -student remove column nume
-    if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
-        strcmp(parametrii[1], "remove") == 0 &&
-        strcmp(parametrii[2], "column") == 0)
+    // alter student remove column nume
+    if (strcmp(parametrii[0], "alter") == 0 && 
+        nrParametrii >= 3 &&
+        strcmp(parametrii[2], "remove") == 0 &&
+        strcmp(parametrii[3], "column") == 0)
         return TIP_REMOVE;
 
-    // -student insert ...
-    if (parametrii[0][0] == '-' && nrParametrii >= 3 &&
-        strcmp(parametrii[1], "insert") == 0)
+    // insert into student ...
+    if (strcmp(parametrii[0], "insert") == 0 && 
+        nrParametrii >= 3 &&
+        strcmp(parametrii[1], "into") == 0)
         return TIP_INSERT;
 
     // --help
     if (strcmp(parametrii[0], "--help") == 0)
         return TIP_HELP;
+
+    if (parametrii[0][0] == '-' && nrParametrii >=3 &&
+        strcmp(parametrii[1], "where") == 0) {
+        return TIP_WHERE;
+    }
+
 
     return TIP_INVALID;
 }
@@ -173,27 +182,41 @@ void Interogare::executa(BazaDeDate& baza) {
                 cout << "Index invalid!" << '\n';
             }
         }
+        else if (nrParametrii > 3) {
+            
+            const char* numeColoana = parametrii[3];
+            const char* op = parametrii[4];
+            const char* valoare = parametrii[5];
+            if (t == nullptr) {
+                cout << "Tabela inexistenta!";
+            }
+            t->selectRand(numeColoana, op, valoare);
+            
+        }
         break;
     }
 
     case TIP_ADD: {
         
         if (nrParametrii < 4) { cout << "Comanda invalida!" << '\n'; return; }
-        const char* numeTabela = parametrii[0] + 2; 
+        const char* numeTabela = parametrii[1];
         Tabela* t = baza.getTabela(numeTabela);
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
-        t->addColumn(parametrii[3]);
+        t->addColumn(parametrii[4]);
         cout << "Coloana adaugata!" << '\n';
         break;
     }
 
     case TIP_REMOVE: {
         
-        if (nrParametrii < 4) { cout << "Comanda invalida!" << '\n'; return; }
-        const char* numeTabela = parametrii[0] + 2;
+        if (nrParametrii < 4) { 
+            cout << "Comanda invalida!" << '\n'; 
+            return; 
+        }
+        const char* numeTabela = parametrii[1];
         Tabela* t = baza.getTabela(numeTabela);
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
-        t->removeColumn(parametrii[3]);
+        t->removeColumn(parametrii[4]);
         cout << "Coloana stearsa!" << '\n';
         break;
     }
@@ -201,11 +224,11 @@ void Interogare::executa(BazaDeDate& baza) {
     case TIP_INSERT: {
         
         if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return; }
-        const char* numeTabela = parametrii[0] + 2;
+        const char* numeTabela = parametrii[2];
         Tabela* t = baza.getTabela(numeTabela);
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
 
-        int nrValori = nrParametrii - 2; 
+        int nrValori = nrParametrii - 3; 
         
 
         
@@ -213,13 +236,35 @@ void Interogare::executa(BazaDeDate& baza) {
         vector<string> valori;
         valori.reserve(nrValori);
         for (int i = 0; i < nrValori; i++) {
-            valori.emplace_back(parametrii[i + 2]);
+            valori.emplace_back(parametrii[i + 3]);
         }
         Rand r(0, valori);
         t->insertRand(r);
         
         
         cout << "Rand inserat!" << '\n';
+        break;
+    }
+
+
+    case TIP_WHERE: {
+        // de implementat
+        // ./test.exe -student where 'Coloana' conditie
+        // string::find pt stringuri
+        // compara > < == >= <= pt numere
+        if (nrParametrii < 3) {
+            cout << "Comanda invalida" << "\n";
+            return;
+        }
+        const char* numeTabela = parametrii[0] + 2;
+        const char* numeColoana = parametrii[2];
+        const char* op = parametrii[3];
+        const char* valoare = parametrii[4];
+        Tabela* t = baza.getTabela(numeTabela);
+        if (t == nullptr) {
+            cout << "Tabela inexistenta!";
+        }
+        t->selectRand(numeColoana, op, valoare);
         break;
     }
 
