@@ -31,7 +31,7 @@ public:
     Rand getRand(int) const;
     int getNrColoane() const;
     void setNumeTabela(const char*);
-    void addColumn(const char*);
+    void addColumn(const char*, const char*);
     void removeColumn(const char*);
     void insertRand(const Rand&);
     void selectRand(const char*, const char*, const char*);

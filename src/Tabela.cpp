@@ -4,7 +4,7 @@ int Tabela::nrTabele = 0;
 
 Tabela::Tabela() : idTabela(0) {
     numeTabela = new char[strlen("N/A") + 1];
-    strcpy_s(numeTabela, strlen("N/A") + 1, "N/A");
+    strcpy(numeTabela, "N/A");
     coloane.reserve(5);
     Tabela::nrTabele++;
 }
@@ -12,11 +12,11 @@ Tabela::Tabela() : idTabela(0) {
 Tabela::Tabela(const char* numeTabela, vector<Coloana> coloane, int idTabela) : idTabela(idTabela), coloane(coloane) {
     if (numeTabela != nullptr) {
         this->numeTabela = new char[strlen(numeTabela) + 1];
-        strcpy_s(this->numeTabela, strlen(numeTabela) + 1, numeTabela);
+        strcpy(this->numeTabela, numeTabela);
     }
     else {
         this->numeTabela = new char[strlen("N/A") + 1];
-        strcpy_s(this->numeTabela, strlen("N/A") + 1, "N/A");
+        strcpy(this->numeTabela, "N/A");
     }
     Tabela::nrTabele++;
 }
@@ -24,11 +24,11 @@ Tabela::Tabela(const char* numeTabela, vector<Coloana> coloane, int idTabela) : 
 Tabela::Tabela(const Tabela& t) : idTabela(t.idTabela), coloane(t.coloane) {
     if (t.numeTabela != nullptr) {
         this->numeTabela = new char[strlen(t.numeTabela) + 1];
-        strcpy_s(this->numeTabela, strlen(t.numeTabela) + 1, t.numeTabela);
+        strcpy(this->numeTabela, t.numeTabela);
     }
     else {
         this->numeTabela = new char[strlen("N/A") + 1];
-        strcpy_s(this->numeTabela, strlen("N/A") + 1, "N/A");
+        strcpy(this->numeTabela, "N/A");
     }
     Tabela::nrTabele++;
 }
@@ -43,11 +43,11 @@ Tabela& Tabela::operator=(const Tabela& t) {
         if (numeTabela != nullptr) delete[] numeTabela;
         if (t.numeTabela != nullptr) {
             this->numeTabela = new char[strlen(t.numeTabela) + 1];
-            strcpy_s(this->numeTabela, strlen(t.numeTabela) + 1, t.numeTabela);
+            strcpy(this->numeTabela, t.numeTabela);
         }
         else {
             this->numeTabela = new char[strlen("N/A") + 1];
-            strcpy_s(this->numeTabela, strlen("N/A") + 1, "N/A");
+            strcpy(this->numeTabela, "N/A");
         }
         this->coloane = t.coloane;
     }
@@ -98,11 +98,11 @@ void Tabela::setNumeTabela(const char* nume) {
     }
     if (nume != nullptr) {
         numeTabela = new char[strlen(nume) + 1];
-        strcpy_s(numeTabela, strlen(nume) + 1, nume);
+        strcpy(numeTabela,  nume);
     }
     else {
         numeTabela = new char[strlen("N/A") + 1];
-        strcpy_s(numeTabela, strlen("N/A") + 1, "N/A");
+        strcpy(numeTabela, "N/A");
     }
 }
 
@@ -112,14 +112,17 @@ bool Tabela::operator>(const Tabela& t) {
 
 char* Tabela::getNumeTabela() const {
     char* copie = new char[strlen(numeTabela) + 1];
-    strcpy_s(copie, strlen(numeTabela) + 1, numeTabela);
+    strcpy(copie, numeTabela);
     return copie;
 }
 
 Coloana* Tabela::getColoana(const char* nume) {
-    for (size_t i = 0; i < coloane.size(); i++)
-        if (strcmp(coloane[i].getNume(), nume) == 0)
+    for (size_t i = 0; i < coloane.size(); i++) {
+        char* numeCol = coloane[i].getNume();
+        if (strcmp(numeCol, nume) == 0)
             return &coloane[i];
+        delete[] numeCol;
+    }
     return nullptr;
 }
 
@@ -161,7 +164,7 @@ bool verificaConditie(const string& valoareColoana, const string& op, const stri
 void Tabela::selectRand(const char* coloana, const char* op, const char* valoare) {
     Coloana* c = getColoana(coloana);
     if (c == nullptr) {
-        cout << "Coloana" << coloana << " nu exista" << "\n";
+        cout << "Coloana " << coloana << " nu exista" << "\n";
     }
     cout << "ID\t";
     for (size_t i = 0; i < coloane.size(); i++) {
@@ -182,7 +185,7 @@ void Tabela::selectRand(const char* coloana, const char* op, const char* valoare
 }
 
 
-void Tabela::addColumn(const char* nume) {
+void Tabela::addColumn(const char* nume, const char* tipData) {
     /*Coloana noua(nume, );
     Coloana* temp = new Coloana[nrColoane + 1];
     for (int i = 0; i < nrColoane; i++)
@@ -195,7 +198,9 @@ void Tabela::addColumn(const char* nume) {
         nrRanduri = (int)coloane[0];
     }
     vector<string> valori(nrRanduri, " ");
-    coloane.emplace_back(nume, valori);
+    TipData tip = Coloana::getTipData(tipData);
+
+    coloane.emplace_back(nume, valori, tip);
 }
 
 void Tabela::removeColumn(const char* nume) {
@@ -267,7 +272,7 @@ istream& operator>>(istream& in, Tabela& t) {
     in >> buffer;
     if (t.numeTabela != nullptr) delete[] t.numeTabela;
     t.numeTabela = new char[buffer.length() + 1];
-    strcpy_s(t.numeTabela, buffer.length() + 1, buffer.c_str());
+    strcpy(t.numeTabela, buffer.c_str());
     cout << "Nr coloane: ";
     int sz = 0;
     in >> sz;

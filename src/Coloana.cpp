@@ -4,31 +4,33 @@ int Coloana::marimeDefault = 1;
 
 Coloana::Coloana(){
     nume = new char[strlen("N/A") + 1];
-    strcpy_s(nume, strlen("N/A") + 1, "N/A");
+    strcpy(nume, "N/A");
     date.reserve(5);
+    this->tipData = String;
 }
 
-Coloana::Coloana(const char* nume, vector<string> date) : date(date)  {
+Coloana::Coloana(const char* nume, vector<string> date, TipData tipData) : date(date)  {
     if (nume != nullptr) {
         this->nume = new char[strlen(nume) + 1];
-        strcpy_s(this->nume, strlen(nume) + 1, nume);
+        strcpy(this->nume, nume);
     }
     else {
         this->nume = new char[strlen("N/A") + 1];
-        strcpy_s(this->nume, strlen("N/A") + 1, "N/A");
+        strcpy(this->nume, "N/A");
     }
+    this->tipData = tipData;
 }
 
 Coloana::Coloana(const Coloana& c) : date(c.date)  {
     if (c.nume != nullptr) {
         this->nume = new char[strlen(c.nume) + 1];
-        strcpy_s(this->nume, strlen(c.nume) + 1, c.nume);
+        strcpy(this->nume, c.nume);
     }
     else {
         nume = new char[strlen("N/A") + 1];
-        strcpy_s(nume, strlen("N/A") + 1, "N/A");
+        strcpy(nume, "N/A");
     }
-    
+    this->tipData = c.tipData;
 }
 
 Coloana::~Coloana() {
@@ -37,7 +39,7 @@ Coloana::~Coloana() {
 
 char* Coloana::getNume() const {
     char* copie = new char[strlen(nume) + 1];
-    strcpy_s(copie, strlen(nume) + 1, nume);
+    strcpy(copie, nume);
     return copie;
 }
 
@@ -45,11 +47,28 @@ void Coloana::setNume(const char* nume) {
     if (this->nume != nullptr) delete[] this->nume;
     if (nume != nullptr) {
         this->nume = new char[strlen(nume) + 1];
-        strcpy_s(this->nume, strlen(nume) + 1, nume);
+        strcpy(this->nume, nume);
     }
     else {
         this->nume = new char[strlen("N/A") + 1];
-        strcpy_s(this->nume, strlen("N/A") + 1, "N/A");
+        strcpy(this->nume, "N/A");
+    }
+}
+
+TipData* Coloana::getTip() {
+    return &this->tipData;
+}
+
+TipData Coloana::getTipData(const char* tipData) {
+    if (strcmp(tipData, "date") == 0) {
+        return TipData::Data;
+    }
+    
+    else if (strcmp(tipData, "number") == 0) {
+        return TipData::Numar;
+    }
+    else {
+        return TipData::String;
     }
 }
 
@@ -58,13 +77,14 @@ Coloana& Coloana::operator=(const Coloana& c){
         if (nume != nullptr) delete[] nume;
         if (c.nume != nullptr) {
             this->nume = new char[strlen(c.nume) + 1];
-            strcpy_s(this->nume, strlen(c.nume) + 1, c.nume);
+            strcpy(this->nume, c.nume);
         }
         else {
             this->nume = new char[strlen("N/A") + 1];
-            strcpy_s(this->nume, strlen("N/A") + 1, "N/A");
+            strcpy(this->nume, "N/A");
         }
         this->date = c.date;
+        this->tipData = c.tipData;
     }
     return *this;
 }
@@ -144,7 +164,7 @@ istream& operator>>(istream& in, Coloana& c) {
     in >> buffer;
     if (c.nume != nullptr) delete[] c.nume;
     c.nume = new char[buffer.length() + 1];
-    strcpy_s(c.nume, buffer.length() + 1, buffer.c_str());
+    strcpy(c.nume, buffer.c_str());
 
     int sz = 0;
     cout << "Size-ul vectorului de date: ";

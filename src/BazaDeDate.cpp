@@ -4,7 +4,7 @@ int BazaDeDate::bazeDeDateCreate = 0;
 
 BazaDeDate::BazaDeDate() : idBaza(0) {
     denumireBaza = new char[strlen("N/A") + 1];
-    strcpy_s(denumireBaza, strlen("N/A") + 1, "N/A");
+    strcpy(denumireBaza, "N/A");
     tabele.reserve(5);
     BazaDeDate::bazeDeDateCreate++;
 }
@@ -12,11 +12,11 @@ BazaDeDate::BazaDeDate() : idBaza(0) {
 BazaDeDate::BazaDeDate(const char* denumireBaza, vector<Tabela> tabele, int idBaza) : idBaza(idBaza), tabele(tabele) {
     if (denumireBaza != nullptr) {
         this->denumireBaza = new char[strlen(denumireBaza) + 1];
-        strcpy_s(this->denumireBaza, strlen(denumireBaza) + 1, denumireBaza);
+        strcpy(this->denumireBaza, denumireBaza);
     }
     else {
         this->denumireBaza = new char[strlen("N/A") + 1];
-        strcpy_s(this->denumireBaza, strlen("N/A") + 1, "N/A");
+        strcpy(this->denumireBaza, "N/A");
     }
     BazaDeDate::bazeDeDateCreate++;
 }
@@ -24,11 +24,11 @@ BazaDeDate::BazaDeDate(const char* denumireBaza, vector<Tabela> tabele, int idBa
 BazaDeDate::BazaDeDate(const BazaDeDate& b) : idBaza(b.idBaza), tabele(b.tabele) {
     if (b.denumireBaza != nullptr) {
         this->denumireBaza = new char[strlen(b.denumireBaza) + 1];
-        strcpy_s(this->denumireBaza, strlen(b.denumireBaza) + 1, b.denumireBaza);
+        strcpy(this->denumireBaza, b.denumireBaza);
     }
     else {
         this->denumireBaza = new char[strlen("N/A") + 1];
-        strcpy_s(this->denumireBaza, strlen("N/A") + 1, "N/A");
+        strcpy(this->denumireBaza, "N/A");
     }
     BazaDeDate::bazeDeDateCreate++;
 }
@@ -43,11 +43,11 @@ BazaDeDate& BazaDeDate::operator=(const BazaDeDate& b) {
         if (denumireBaza != nullptr) delete[] denumireBaza;
         if (b.denumireBaza != nullptr) {
             this->denumireBaza = new char[strlen(b.denumireBaza) + 1];
-            strcpy_s(this->denumireBaza, strlen(b.denumireBaza) + 1, b.denumireBaza);
+            strcpy(this->denumireBaza, b.denumireBaza);
         }
         else {
             this->denumireBaza = new char[strlen("N/A") + 1];
-            strcpy_s(this->denumireBaza, strlen("N/A") + 1, "N/A");
+            strcpy(this->denumireBaza, "N/A");
         }
         tabele = b.tabele;
     }
@@ -164,8 +164,8 @@ char* citesteString(ifstream& f) {
 void BazaDeDate::salveaza() {
     
     char numeFisier[200];
-    strcpy_s(numeFisier, denumireBaza);
-    strcat_s(numeFisier, ".bin");
+    strcpy(numeFisier, denumireBaza);
+    strcat(numeFisier, ".bin");
 
     ofstream f(numeFisier, ios::binary);
     if (!f.is_open()) {
@@ -190,7 +190,7 @@ void BazaDeDate::salveaza() {
             char* numeC = c.getNume();
             scrieString(f, numeC);
             delete[] numeC;
-
+            f.write((char*)c.getTip(), sizeof(int));
             int sz = (int)c;
             f.write((char*)&sz, sizeof(int));
             for (int k = 0; k < sz; k++)
@@ -203,8 +203,8 @@ void BazaDeDate::salveaza() {
 
 void BazaDeDate::incarca() {
     char numeFisier[200];
-    strcpy_s(numeFisier, denumireBaza);
-    strcat_s(numeFisier, ".bin");
+    strcpy(numeFisier, denumireBaza);
+    strcat(numeFisier, ".bin");
 
     ifstream f(numeFisier, ios::binary);
     if (!f.is_open()) {
@@ -228,6 +228,9 @@ void BazaDeDate::incarca() {
         vector<Coloana> cols(nrCol);
         for (int j = 0; j < nrCol; j++) {
             char* numeC = citesteString(f);
+            int nrTipData;
+            f.read((char*)&nrTipData, sizeof(int));
+            TipData tip = (TipData)nrTipData;
             int sz = 0;
             f.read((char*)&sz, sizeof(int));
             //char** valori = new char* [sz];
@@ -238,7 +241,7 @@ void BazaDeDate::incarca() {
                 valori.emplace_back(buffer);
                 delete[] buffer;
             }
-            cols[j] = Coloana(numeC, valori);
+            cols[j] = Coloana(numeC, valori, tip);
             delete[] numeC;
         }
         tabele.emplace_back(numeT, cols, i);
@@ -262,7 +265,7 @@ istream& operator>>(istream& in, BazaDeDate& b) {
     in >> buffer;
     if (b.denumireBaza != nullptr) delete[] b.denumireBaza;
     b.denumireBaza = new char[buffer.length() + 1];
-    strcpy_s(b.denumireBaza, buffer.length() + 1, buffer.c_str());
+    strcpy(b.denumireBaza, buffer.c_str());
     size_t nrTabele;
     cout << "Nr tabele: ";
     in >> nrTabele;

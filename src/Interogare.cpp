@@ -66,7 +66,7 @@ Interogare::Interogare(char** argv, int argc) {
         parametrii = new char* [nrParametrii];
         for (int i = 0; i < nrParametrii; i++) {
             parametrii[i] = new char[strlen(argv[i + 1]) + 1];
-            strcpy_s(parametrii[i], strlen(argv[i + 1]) + 1, argv[i + 1]);
+            strcpy(parametrii[i], argv[i + 1]);
         }
     }
     else parametrii = nullptr;
@@ -81,7 +81,7 @@ Interogare::Interogare(const Interogare& i) {
         this->parametrii = new char* [i.nrParametrii];
         for (int j = 0; j < i.nrParametrii; j++) {
             this->parametrii[j] = new char[strlen(i.parametrii[j]) + 1];
-            strcpy_s(this->parametrii[j], strlen(i.parametrii[j]) + 1, i.parametrii[j]);
+            strcpy(this->parametrii[j], i.parametrii[j]);
         }
     }
     else this->parametrii = nullptr;
@@ -109,7 +109,7 @@ Interogare& Interogare::operator=(const Interogare& i) {
             this->parametrii = new char* [i.nrParametrii];
             for (int j = 0; j < i.nrParametrii; j++) {
                 this->parametrii[j] = new char[strlen(i.parametrii[j]) + 1];
-                strcpy_s(this->parametrii[j], strlen(i.parametrii[j]) + 1, i.parametrii[j]);
+                strcpy(this->parametrii[j], i.parametrii[j]);
             }
         }
         else this->parametrii = nullptr;
@@ -202,7 +202,7 @@ void Interogare::executa(BazaDeDate& baza) {
         const char* numeTabela = parametrii[1];
         Tabela* t = baza.getTabela(numeTabela);
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
-        t->addColumn(parametrii[4]);
+        t->addColumn(parametrii[4], parametrii[6]);
         cout << "Coloana adaugata!" << '\n';
         break;
     }
