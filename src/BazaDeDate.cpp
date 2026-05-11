@@ -146,7 +146,7 @@ void scrieString(ofstream& f, string str) {
         len = 0;
     }
     char* strC = new char[str.length() + 1];
-    strcpy_s(strC, str.length() + 1, str.c_str());
+    strcpy(strC, str.c_str());
     //int len = str ? strlen(str) : 0;
     f.write((char*)&len, sizeof(int));
     if (len > 0) f.write(strC, len);
