@@ -141,18 +141,22 @@ Rand Tabela::getRand(int index) const {
     return r;
 }
 
-bool verificaConditie(const string& valoareColoana, const string& op, const string& valoareData) {
+bool verificaConditie(const string& valoareColoana, const string& op, const string& valoareData, TipData tip) {
     if (op == "=") return valoareColoana == valoareData;
     if (op == "like") return valoareColoana.find(valoareData) != string::npos;
 
     try {
         float valColoanaFloat = std::stof(valoareColoana);
         float valDataFloat = std::stof(valoareData);
-
-        if (op == ">") return valColoanaFloat > valDataFloat;
-        if (op == "<") return valColoanaFloat < valDataFloat;
-        if (op == ">=") return valColoanaFloat >= valDataFloat;
-        if (op == "<=") return valColoanaFloat <= valDataFloat;
+        if (tip == TipData::Numar) {
+            if (op == ">") return valColoanaFloat > valDataFloat;
+            if (op == "<") return valColoanaFloat < valDataFloat;
+            if (op == ">=") return valColoanaFloat >= valDataFloat;
+            if (op == "<=") return valColoanaFloat <= valDataFloat;
+        }
+        else {
+            // de facut pt tip data .
+        }
     }
     catch (...) {
         throw runtime_error("Clauza where folosita gresit. Pentru comparare string folositi like. Pt valori folositi operatori aritmetici.");
@@ -177,7 +181,7 @@ void Tabela::selectRand(const char* coloana, const char* op, const char* valoare
     int nrRanduri = coloane.empty() ? 0 : int(coloane[0]);
     for (int i = 0; i < nrRanduri; i++) {
         string valoareColoana = (*c)[i];
-        if (verificaConditie(valoareColoana, op, valoare)) {
+        if (verificaConditie(valoareColoana, op, valoare, *c->getTip())) {
             cout << i << "\t" << getRand(i);
         }
     }
