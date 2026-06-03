@@ -234,8 +234,18 @@ void Interogare::executa(BazaDeDate& baza) {
         
         //char** valori = new char* [nrValori];
         vector<string> valori;
-        valori.reserve(nrValori);
-        for (int i = 0; i < nrValori; i++) {
+        valori.reserve(nrValori + 1);
+        try {
+            std::stoi(parametrii[3]);
+            valori.emplace_back(parametrii[3]);
+        }
+        catch (...) {
+            int id = t->getColoana("ID")->getLastID();
+            id++;
+            valori.emplace_back(std::to_string(id));
+            valori.emplace_back(parametrii[3]);
+        }
+        for (int i = 1; i < nrValori; i++) {
             valori.emplace_back(parametrii[i + 3]);
         }
         Rand r(0, valori);

@@ -106,7 +106,7 @@ void BazaDeDate::createTable(const char* nume) {
     }
     Tabela noua;
     noua.setNumeTabela(nume);
-    
+    noua.addColumn("ID", "number");
     *this = *this + noua;
    
     cout << "Tabela " << nume << " creata!" << '\n';

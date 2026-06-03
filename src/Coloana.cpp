@@ -55,6 +55,11 @@ void Coloana::setNume(const char* nume) {
     }
 }
 
+int Coloana::getLastID() {
+    if (date.empty()) return -1;
+    return stoi(date.back());
+}
+
 TipData* Coloana::getTip() {
     return &this->tipData;
 }

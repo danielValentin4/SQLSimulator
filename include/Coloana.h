@@ -31,6 +31,7 @@ public:
     ~Coloana();
     char* getNume() const;
     void setNume(const char*);
+    int getLastID();
     TipData* getTip();
     static TipData getTipData(const char*);
     Coloana& operator=(const Coloana&);

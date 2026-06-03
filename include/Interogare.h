@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include "BazaDeDate.h"
 //using namespace std;
-
+using std::vector, std::string, std::ostream, std::istream, std::runtime_error, std::cout;
 #define TIP_INVALID  0
 #define TIP_CREATE   1
 #define TIP_ADD      2

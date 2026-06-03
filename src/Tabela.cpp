@@ -170,7 +170,7 @@ void Tabela::selectRand(const char* coloana, const char* op, const char* valoare
     if (c == nullptr) {
         cout << "Coloana " << coloana << " nu exista" << "\n";
     }
-    cout << "ID\t";
+    
     for (size_t i = 0; i < coloane.size(); i++) {
         char* nume = coloane[i].getNume();
         cout << nume << "\t";
@@ -182,7 +182,7 @@ void Tabela::selectRand(const char* coloana, const char* op, const char* valoare
     for (int i = 0; i < nrRanduri; i++) {
         string valoareColoana = (*c)[i];
         if (verificaConditie(valoareColoana, op, valoare, *c->getTip())) {
-            cout << i << "\t" << getRand(i);
+            cout << getRand(i);
         }
     }
 
@@ -248,7 +248,7 @@ void Tabela::insertRand(const Rand& r) {
 
 ostream& operator<<(ostream& out, const Tabela& t) {
     if (t.coloane.size() == 0) { out << "Tabela goala !" << '\n'; return out; }
-    out << "ID" << "\t";
+    //out << "ID" << "\t";
     for (int i = 0;i < t.coloane.size();i++) {
         char* nume = t.coloane[i].getNume();
         out << nume << "\t";
@@ -258,7 +258,7 @@ ostream& operator<<(ostream& out, const Tabela& t) {
 
     int nrRanduri = (int)t.coloane[0];
     for (int i = 0;i < nrRanduri;i++) {
-        out << i << "\t";
+        
         Rand r = t.getRand(i);
         for (int j = 0;j < t.coloane.size();j++) {
             
