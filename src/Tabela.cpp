@@ -246,6 +246,18 @@ void Tabela::insertRand(const Rand& r) {
     
 }
 
+void Tabela::purgeTable(int conditie) {
+    if (conditie == 1) {
+        coloane.clear();
+        addColumn("ID", "number");
+    }
+    else {
+        for (size_t i = 0; i < coloane.size(); i++) {
+            coloane[i].clearData();
+        }
+    }
+}
+
 ostream& operator<<(ostream& out, const Tabela& t) {
     if (t.coloane.size() == 0) { out << "Tabela goala !" << '\n'; return out; }
     //out << "ID" << "\t";

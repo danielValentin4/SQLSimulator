@@ -99,6 +99,16 @@ Tabela* BazaDeDate::getTabela(const char* nume) {
     return nullptr;
 }
 
+
+void BazaDeDate::showTables() {
+    cout << "Tabele: \n";
+    for (size_t i = 0; i < tabele.size(); i++) {
+        char* nume = tabele[i].getNumeTabela();
+        cout << nume << "\n";
+        delete[] nume;
+    }
+}
+
 void BazaDeDate::createTable(const char* nume) {
     if (getTabela(nume) != nullptr) {
         cout << "Tabela exista deja!" << '\n';

@@ -48,6 +48,16 @@ int Interogare::detectTip() {
         return TIP_WHERE;
     }
 
+    if (strcmp(parametrii[0], "show") == 0 &&
+        strcmp(parametrii[1], "tables") == 0)
+        return TIP_SHOW_TABLES;
+
+    if (strcmp(parametrii[0], "purge") == 0 &&
+        strcmp(parametrii[1], "table") == 0 &&
+        nrParametrii > 2)
+        return TIP_PURGE_TABLE;
+
+
 
     return TIP_INVALID;
 }
@@ -258,10 +268,7 @@ void Interogare::executa(BazaDeDate& baza) {
 
 
     case TIP_WHERE: {
-        // de implementat
-        // ./test.exe -student where 'Coloana' conditie
-        // string::find pt stringuri
-        // compara > < == >= <= pt numere
+        
         if (nrParametrii < 3) {
             cout << "Comanda invalida" << "\n";
             return;
@@ -275,6 +282,34 @@ void Interogare::executa(BazaDeDate& baza) {
             cout << "Tabela inexistenta!";
         }
         t->selectRand(numeColoana, op, valoare);
+        break;
+    }
+
+
+    case TIP_SHOW_TABLES: {
+        baza.showTables();
+        break;
+    }
+
+    case TIP_PURGE_TABLE: {
+        if (nrParametrii < 3 || nrParametrii > 4) {
+            cout << "Comanda invalida\n";
+        }
+        int conditie = 0;
+        if (nrParametrii == 4) {
+            if (strcmp(parametrii[3], "--full") == 0) {
+                conditie = 1;
+            }
+        }
+        Tabela* tabela = baza.getTabela(parametrii[2]);
+        if (tabela == nullptr) {
+            cout << "Tabela nu exista \n";
+            return;
+        }
+        char* nume = tabela->getNumeTabela();
+        tabela->purgeTable(conditie);
+        cout << "Datele din tabela " << nume << " au fost sterse\n";
+        delete[] nume;
         break;
     }
 

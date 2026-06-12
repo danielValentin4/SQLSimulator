@@ -35,6 +35,7 @@ public:
     void removeColumn(const char*);
     void insertRand(const Rand&);
     void selectRand(const char*, const char*, const char*);
+    void purgeTable(int);
     friend ostream& operator<<(ostream&,const Tabela&);
     friend istream& operator>>(istream&, Tabela&);
 };

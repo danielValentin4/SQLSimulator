@@ -60,6 +60,10 @@ int Coloana::getLastID() {
     return stoi(date.back());
 }
 
+void Coloana::clearData() {
+    date.clear();
+}
+
 TipData* Coloana::getTip() {
     return &this->tipData;
 }
