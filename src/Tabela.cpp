@@ -6,10 +6,12 @@ Tabela::Tabela() : idTabela(0) {
     numeTabela = new char[strlen("N/A") + 1];
     strcpy(numeTabela, "N/A");
     coloane.reserve(5);
+    deleted.reserve(5);
+    mapID.reserve(5);
     Tabela::nrTabele++;
 }
 
-Tabela::Tabela(const char* numeTabela, vector<Coloana> coloane, int idTabela) : idTabela(idTabela), coloane(coloane) {
+Tabela::Tabela(const char* numeTabela, vector<Coloana> coloane, int idTabela, vector<bool> deleted) : idTabela(idTabela), coloane(coloane), deleted(deleted) {
     if (numeTabela != nullptr) {
         this->numeTabela = new char[strlen(numeTabela) + 1];
         strcpy(this->numeTabela, numeTabela);
@@ -21,7 +23,7 @@ Tabela::Tabela(const char* numeTabela, vector<Coloana> coloane, int idTabela) : 
     Tabela::nrTabele++;
 }
 
-Tabela::Tabela(const Tabela& t) : idTabela(t.idTabela), coloane(t.coloane) {
+Tabela::Tabela(const Tabela& t) : idTabela(t.idTabela), coloane(t.coloane), deleted(t.deleted) {
     if (t.numeTabela != nullptr) {
         this->numeTabela = new char[strlen(t.numeTabela) + 1];
         strcpy(this->numeTabela, t.numeTabela);
@@ -50,6 +52,7 @@ Tabela& Tabela::operator=(const Tabela& t) {
             strcpy(this->numeTabela, "N/A");
         }
         this->coloane = t.coloane;
+        this->deleted = t.deleted;
     }
     return *this;
 }
@@ -128,17 +131,23 @@ Coloana* Tabela::getColoana(const char* nume) {
 
 Rand Tabela::getRand(int index) const {
     if (index < 0) throw runtime_error("Index invalid");
-   
+
     for (size_t i = 0; i < coloane.size(); i++)
         if (index >= (int)coloane[i]) throw runtime_error("Index invalid");
-    vector<string> valori(coloane.size());
-    /*char** valori = new char* [nrColoane];
-    char** nume = new char* [nrColoane];*/
-    for (size_t i = 0; i < coloane.size(); i++) {
-        valori[i] = coloane[i][index];
+    
+    if (deleted[index] == false) {
+        
+        vector<string> valori(coloane.size());
+        /*char** valori = new char* [nrColoane];
+        char** nume = new char* [nrColoane];*/
+        for (size_t i = 0; i < coloane.size(); i++) {
+            valori[i] = coloane[i][index];
+        }
+        Rand r(index, move(valori));
+        return r;
     }
-    Rand r(index, move(valori));
-    return r;
+    vector<string> gol;
+    return Rand(0, gol);
 }
 
 bool verificaConditie(const string& valoareColoana, const string& op, const string& valoareData, TipData tip) {
@@ -180,6 +189,7 @@ void Tabela::selectRand(const char* coloana, const char* op, const char* valoare
 
     int nrRanduri = coloane.empty() ? 0 : int(coloane[0]);
     for (int i = 0; i < nrRanduri; i++) {
+        if (deleted[i] == true) { continue; }
         string valoareColoana = (*c)[i];
         if (verificaConditie(valoareColoana, op, valoare, *c->getTip())) {
             cout << getRand(i);
@@ -232,18 +242,39 @@ void Tabela::removeColumn(const char* nume) {
 }
 
 void Tabela::insertRand(const Rand& r) {
-    for (int i = 0; i < coloane.size(); i++) {
-        int dimensiuneRand = (int)r;
+    int slot = findSlot();
+    int dimensiuneRand = (int)r;
+    if (slot == -1) {
+        for (int i = 0; i < coloane.size(); i++) {
+            
 
-        if (i < dimensiuneRand) {
-            coloane[i] +=  r[i];
+            if (i < dimensiuneRand) {
+                coloane[i] += r[i];
+            }
+            else {
+                coloane[i] += " ";
+            }
         }
-        else {
-            coloane[i] += " ";
-        }
+        string ID = coloane[0][(int)coloane[0] - 1];
+        int index = (int)coloane[0] - 1;
+        mapID.emplace(ID, index);
+        deleted.emplace_back(false);
     }
-    
-    
+    else {
+        for (int i = 0; i < coloane.size(); i++) {
+            
+            if (i < dimensiuneRand) {
+                coloane[i][slot] = r[i];
+            }
+            else {
+                coloane[i][slot] = " ";
+            }
+        }
+        deleted[slot] = false;
+        string id = r[0];
+        mapID.emplace(id, slot);
+    }
+
 }
 
 void Tabela::purgeTable(int conditie) {
@@ -258,6 +289,42 @@ void Tabela::purgeTable(int conditie) {
     }
 }
 
+
+void Tabela::addMap(string key, int index) {
+    mapID.emplace(key, index);
+}
+
+int Tabela::getIndex(string key) {
+    return mapID[key];
+}
+
+int Tabela::findSlot() {
+    
+    for (int j = 0; j < deleted.size(); j++) {
+        if (deleted[j] == true) {
+            return j;
+        }
+    }
+    return -1;
+}
+
+int Tabela::getNrRanduri() {
+    return (int)coloane[0];
+}
+
+bool Tabela::isDeleted(int index) {
+    return deleted[index];
+}
+
+void Tabela::setDeleted(int index) {
+    this->deleted[index] = true;
+}
+
+void Tabela::setMap(unordered_map<string, int> map) {
+    mapID.clear();
+    mapID = map;
+}
+
 ostream& operator<<(ostream& out, const Tabela& t) {
     if (t.coloane.size() == 0) { out << "Tabela goala !" << '\n'; return out; }
     //out << "ID" << "\t";
@@ -270,7 +337,7 @@ ostream& operator<<(ostream& out, const Tabela& t) {
 
     int nrRanduri = (int)t.coloane[0];
     for (int i = 0;i < nrRanduri;i++) {
-        
+        if (t.deleted[i] == true) { continue; }
         Rand r = t.getRand(i);
         for (int j = 0;j < t.coloane.size();j++) {
             

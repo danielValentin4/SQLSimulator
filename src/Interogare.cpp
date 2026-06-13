@@ -57,6 +57,16 @@ int Interogare::detectTip() {
         nrParametrii > 2)
         return TIP_PURGE_TABLE;
 
+    if (strcmp(parametrii[0], "delete") == 0 &&
+        strcmp(parametrii[1], "from") == 0 &&
+        nrParametrii > 3)
+        return TIP_DELETE;
+
+    //update table student where Varsta > 10 to Varsta == 10*Varsta
+    if (strcmp(parametrii[0], "update") == 0 &&
+        strcmp(parametrii[1], "table") == 0 &&
+        nrParametrii > 11)
+        return TIP_UPDATE;
 
 
     return TIP_INVALID;
@@ -185,7 +195,9 @@ void Interogare::executa(BazaDeDate& baza) {
             // afiseaza randul cu indexul dat
             int index = atoi(parametrii[2]);
             try {
+                
                 Rand r = t->getRand(index);
+               
                 cout << r;
             }
             catch (...) {
@@ -314,6 +326,22 @@ void Interogare::executa(BazaDeDate& baza) {
     }
 
 
+    case TIP_DELETE: {
+        // delete from tableName where ID == ...
+        Tabela* t = baza.getTabela(parametrii[2]);
+        int index = t->getIndex(parametrii[6]);
+        t->setDeleted(index);
+        break;
+    }
+
+
+    case TIP_UPDATE: {
+
+
+        break;
+    }
+
+
     case TIP_HELP: {
         cout << "===============================================" << '\n';
         cout << "         SQLSimulator - Comenzi disponibile   " << '\n';
@@ -343,6 +371,15 @@ void Interogare::executa(BazaDeDate& baza) {
         cout << '\n';
         cout << "Stergere tabela:" << '\n';
         cout << "  aplicatie.exe drop table <numeTabel>" << '\n';
+        cout << '\n';
+        cout << "Stergere rand:" << '\n';
+        cout << "  aplicatie.exe delete from <numeTabel> where ID == <valoare>" << '\n';
+        cout << '\n';
+        cout << "Afisare toate tabelele:" << '\n';
+        cout << "  aplicatie.exe show tables" << '\n';
+        cout << '\n';
+        cout << "Stergere totala a datelor din o tabela:" << '\n';
+        cout << "  aplicatie.exe purge table <numeTabel> (--full si pentru coloane)" << '\n';
         cout << '\n';
         cout << "Ajutor:" << '\n';
         cout << "  aplicatie.exe --help" << '\n';

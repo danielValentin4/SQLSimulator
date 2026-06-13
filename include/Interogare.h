@@ -7,17 +7,19 @@
 #include "BazaDeDate.h"
 //using namespace std;
 using std::vector, std::string, std::ostream, std::istream, std::runtime_error, std::cout;
-#define TIP_INVALID          0
-#define TIP_CREATE           1
-#define TIP_ADD              2
-#define TIP_REMOVE           3
-#define TIP_INSERT           4
-#define TIP_SELECT           5
-#define TIP_DROP             6
-#define TIP_HELP             7
-#define TIP_WHERE            8
-#define TIP_SHOW_TABLES      9
-#define TIP_PURGE_TABLE     10
+constexpr auto TIP_INVALID = 0;
+constexpr auto TIP_CREATE = 1;
+constexpr auto TIP_ADD = 2;
+constexpr auto TIP_REMOVE = 3;
+constexpr auto TIP_INSERT = 4;
+constexpr auto TIP_SELECT = 5;
+constexpr auto TIP_DROP = 6;
+constexpr auto TIP_HELP = 7;
+constexpr auto TIP_WHERE = 8;
+constexpr auto TIP_SHOW_TABLES = 9;
+constexpr auto TIP_PURGE_TABLE = 10;
+constexpr auto TIP_DELETE = 11;
+constexpr auto TIP_UPDATE = 12;
 
 class Interogare {
 private:

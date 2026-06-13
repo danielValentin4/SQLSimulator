@@ -66,10 +66,13 @@ Rand Rand::operator+(const Rand& r) {
 }
 
 ostream& operator<<(ostream& out, const Rand& r) {
+    
     for (size_t i = 0; i < r.date.size();i++) {
         out << r.date[i] << "\t";
     }
     out << '\n';
+        
+    
     return out;
 }
 

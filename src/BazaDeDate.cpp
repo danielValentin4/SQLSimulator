@@ -192,6 +192,14 @@ void BazaDeDate::salveaza() {
         scrieString(f, numeT);
         delete[] numeT;
 
+        int nrRanduriDel = tabele[i].getNrRanduri();
+        f.write((char*)&nrRanduriDel, sizeof(int));
+        for (int k = 0; k < nrRanduriDel; k++) {
+            bool d = tabele[i].isDeleted(k);
+            f.write((char*)&d, sizeof(bool));
+        }
+
+
         int nrCol = tabele[i].getNrColoane();
         f.write((char*)&nrCol, sizeof(int));
 
@@ -206,6 +214,14 @@ void BazaDeDate::salveaza() {
             for (int k = 0; k < sz; k++)
                 scrieString(f, c[k]);
         }
+
+        /*int nrRanduriDel = tabele[i].getNrRanduri();
+        f.write((char*)&nrRanduriDel, sizeof(int));
+        for (int k = 0; k < nrRanduriDel; k++) {
+            bool d = tabele[i].isDeleted(k);
+            f.write((char*)&d, sizeof(bool));
+        }*/
+        
     }
     f.close();
     cout << "Salvat in " << numeFisier << '\n';
@@ -231,6 +247,16 @@ void BazaDeDate::incarca() {
 
     for (int i = 0; i < nrTabele; i++) {
         char* numeT = citesteString(f);
+
+        int nrRanduriDeleted = 0;
+        f.read((char*)&nrRanduriDeleted, sizeof(int));
+        vector<bool> deletedVec(nrRanduriDeleted, false);
+        for (int j = 0; j < nrRanduriDeleted; j++) {
+            bool d{};
+            f.read((char*)&d, sizeof(bool));
+            deletedVec[j] = d;
+        }
+
         int nrCol = 0;
         f.read((char*)&nrCol, sizeof(int));
 
@@ -251,11 +277,24 @@ void BazaDeDate::incarca() {
                 valori.emplace_back(buffer);
                 delete[] buffer;
             }
+
             cols[j] = Coloana(numeC, valori, tip);
             delete[] numeC;
         }
-        tabele.emplace_back(numeT, cols, i);
-        
+
+        /*int nrRanduriDeleted = 0;
+        f.read((char*)&nrRanduriDeleted, sizeof(int));
+        vector<bool> deletedVec(nrRanduriDeleted, false);
+        for (int j = 0; j < nrRanduriDeleted; j++) {
+            bool d{};
+            f.read((char*)&d, sizeof(bool));
+            deletedVec[j] = d;
+        }*/
+
+        tabele.emplace_back(numeT, cols, i, deletedVec);
+        for (int k = 0; k < nrRanduriDeleted; k++) {
+            tabele[i].addMap(cols[0][k], k);
+        }
         delete[] numeT;
     }
     f.close();

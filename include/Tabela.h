@@ -5,19 +5,22 @@
 #include <exception>
 #include <cstring>
 #include <vector>
+#include <unordered_map>
 #include "Coloana.h"
 #include "Rand.h"
 //using namespace std;
-using std::stof;
+using std::stof, std::unordered_map;
 class Tabela {
 private:
     char* numeTabela;
     vector<Coloana> coloane;
     const int idTabela;
     static int nrTabele;
+    unordered_map<string, int> mapID;
+    vector<bool> deleted;
 public:
     Tabela();
-    Tabela(const char*, vector<Coloana>, int);
+    Tabela(const char*, vector<Coloana>, int, vector<bool>);
     Tabela(const Tabela&);
     ~Tabela();
     Tabela& operator=(const Tabela&);
@@ -36,6 +39,13 @@ public:
     void insertRand(const Rand&);
     void selectRand(const char*, const char*, const char*);
     void purgeTable(int);
+    void addMap(string, int);
+    int getIndex(string);
+    int findSlot();
+    int getNrRanduri();
+    bool isDeleted(int);
+    void setDeleted(int index);
+    void setMap(unordered_map<string, int>);
     friend ostream& operator<<(ostream&,const Tabela&);
     friend istream& operator>>(istream&, Tabela&);
 };
