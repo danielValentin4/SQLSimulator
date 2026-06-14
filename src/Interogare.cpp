@@ -65,9 +65,13 @@ int Interogare::detectTip() {
     //update table student where Varsta > 10 to Varsta == 10*Varsta
     if (strcmp(parametrii[0], "update") == 0 &&
         strcmp(parametrii[1], "table") == 0 &&
-        nrParametrii > 11)
+        nrParametrii == 11)
         return TIP_UPDATE;
 
+    if (strcmp(parametrii[0], "describe") == 0 &&
+        strcmp(parametrii[1], "table") == 0 &&
+        nrParametrii == 3)
+        return TIP_DESCRIBE;
 
     return TIP_INVALID;
 }
@@ -190,6 +194,7 @@ void Interogare::executa(BazaDeDate& baza) {
         if (nrParametrii == 2) {
             // afiseaza toata tabela
             cout << *t;
+            t->afisareMap();
         }
         else if (nrParametrii == 3) {
             // afiseaza randul cu indexul dat
@@ -212,8 +217,12 @@ void Interogare::executa(BazaDeDate& baza) {
             if (t == nullptr) {
                 cout << "Tabela inexistenta!";
             }
-            t->selectRand(numeColoana, op, valoare);
-            
+            try {
+                t->selectRand(numeColoana, op, valoare);
+            }
+            catch (runtime_error e) {
+                cout << e.what() << '\n';
+            }
         }
         break;
     }
@@ -336,8 +345,23 @@ void Interogare::executa(BazaDeDate& baza) {
 
 
     case TIP_UPDATE: {
+        //update table student where Varsta > 10 to Varsta == 10
+        Tabela* tabela = baza.getTabela(parametrii[2]);
+        char* numeColoana = parametrii[4];
+        char* op = parametrii[5];
+        char* valoareCheck = parametrii[6];
+        char* coloanaSet = parametrii[8];
+        char* valoareSet = parametrii[10];
+        int numarActualizari = tabela->updateRand(numeColoana, op, valoareCheck, coloanaSet, valoareSet);
+        cout << "Au fost realizate " << numarActualizari << " actualizari" << "\n";
+        break;
+    }
 
 
+    case TIP_DESCRIBE: {
+        Tabela* t = baza.getTabela(parametrii[2]);
+        if (t != nullptr) { t->describeTable(); }
+        else { cout << "Tabela nu exista\n"; }
         break;
     }
 

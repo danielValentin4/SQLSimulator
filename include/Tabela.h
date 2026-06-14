@@ -38,6 +38,7 @@ public:
     void removeColumn(const char*);
     void insertRand(const Rand&);
     void selectRand(const char*, const char*, const char*);
+    int updateRand(const char*, const char*, const char*, const char*, const char*);
     void purgeTable(int);
     void addMap(string, int);
     int getIndex(string);
@@ -46,6 +47,8 @@ public:
     bool isDeleted(int);
     void setDeleted(int index);
     void setMap(unordered_map<string, int>);
+    void afisareMap();
+    void describeTable();
     friend ostream& operator<<(ostream&,const Tabela&);
     friend istream& operator>>(istream&, Tabela&);
 };

@@ -163,8 +163,11 @@ bool verificaConditie(const string& valoareColoana, const string& op, const stri
             if (op == ">=") return valColoanaFloat >= valDataFloat;
             if (op == "<=") return valColoanaFloat <= valDataFloat;
         }
-        else {
+        else if (tip == TipData::Data) {
             // de facut pt tip data .
+        }
+        else {
+            
         }
     }
     catch (...) {
@@ -196,6 +199,30 @@ void Tabela::selectRand(const char* coloana, const char* op, const char* valoare
         }
     }
 
+}
+
+int Tabela::updateRand(const char* coloana, const char* op, const char* valoareCheck, const char* coloanaSet, const char* valoareSet)
+{
+    int numar = 0;
+    Coloana* coloanaFind = getColoana(coloana);
+    Coloana* coloanaSetare = getColoana(coloanaSet);
+    if (coloanaFind == nullptr) {
+        cout << "Coloana " << coloana << " nu exista" << "\n";
+    }
+    if (coloanaSet == nullptr) {
+        cout << "Coloana " << coloana << " nu exista" << "\n";
+    }
+
+    int nrRanduri = coloane.empty() ? 0 : (int)coloane[0];
+    for (int i = 0; i < nrRanduri; i++) {
+        if (deleted[i] == true) { continue; }
+        string valoareCol = (*coloanaFind)[i];
+        if (verificaConditie(valoareCol, op, valoareCheck, *coloanaFind->getTip())) {
+            (*coloanaSetare)[i] = valoareSet;
+            numar++;
+        }
+    }
+    return numar;
 }
 
 
@@ -323,6 +350,28 @@ void Tabela::setDeleted(int index) {
 void Tabela::setMap(unordered_map<string, int> map) {
     mapID.clear();
     mapID = map;
+}
+
+void Tabela::afisareMap()
+{
+    for (auto it : mapID) {
+        cout << it.first << ":" << it.second << "\n";
+    }
+
+}
+
+void Tabela::describeTable()
+{
+    for (size_t i = 0; i < coloane.size(); i++) {
+        char* nume = coloane[i].getNume();
+        char* tip = coloane[i].getTipData();
+        cout << nume << " - " << tip << "\n";
+        delete[] nume;
+        delete[] tip;
+    }
+
+
+
 }
 
 ostream& operator<<(ostream& out, const Tabela& t) {

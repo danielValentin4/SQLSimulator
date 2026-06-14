@@ -30,6 +30,9 @@ target_include_directories(SQLSimulatorCMake PRIVATE include)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET SQLSimulatorCMake PROPERTY CXX_STANDARD 20)
+  if(MSVC)
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+  endif()
 endif()
 
 # TODO: Add tests and install targets if needed.

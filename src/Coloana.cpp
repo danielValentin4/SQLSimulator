@@ -56,8 +56,15 @@ void Coloana::setNume(const char* nume) {
 }
 
 int Coloana::getLastID() {
-    if (date.empty()) return -1;
-    return stoi(date.back());
+    //if (date.empty()) return -1;
+    int max = -1;
+    //return stoi(date.back());
+    for (auto a : date) {
+        if (stoi(a) > max) {
+            max = stoi(a);
+        }
+    }
+    return max;
 }
 
 void Coloana::clearData() {
@@ -79,6 +86,24 @@ TipData Coloana::getTipData(const char* tipData) {
     else {
         return TipData::String;
     }
+}
+
+char* Coloana::getTipData()
+{
+    char* copie = nullptr;
+    if (tipData == TipData::Data) {
+        copie = new char[strlen("date") + 1];
+        strcpy(copie, "data");
+    }
+    if (tipData == TipData::Numar) {
+        copie = new char[strlen("number") + 1];
+        strcpy(copie, "number");
+    }
+    if (tipData == TipData::String) {
+        copie = new char[strlen("string") + 1];
+        strcpy(copie, "string");
+    }
+    return copie;
 }
 
 Coloana& Coloana::operator=(const Coloana& c){

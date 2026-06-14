@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 #include <iostream>
 #include <string>
@@ -35,6 +35,7 @@ public:
     void clearData();
     TipData* getTip();
     static TipData getTipData(const char*);
+    char* getTipData();
     Coloana& operator=(const Coloana&);
     Coloana operator+(const char*);
     Coloana& operator+=(string);
