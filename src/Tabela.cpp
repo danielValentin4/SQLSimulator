@@ -343,6 +343,11 @@ bool Tabela::isDeleted(int index) {
     return deleted[index];
 }
 
+bool Tabela::isDeleted(int index) const
+{
+    return deleted[index];
+}
+
 void Tabela::setDeleted(int index) {
     this->deleted[index] = true;
 }
@@ -374,27 +379,86 @@ void Tabela::describeTable()
 
 }
 
+Tabela Tabela::joinTables(Tabela* tabela1, Tabela* tabela2, char* coloana1, char* coloana2)
+{
+    Tabela t{};
+    int nrRanduri1 = (int)(tabela1->coloane[0]);
+    int nrRanduri2 = (int)(tabela2->coloane[0]);
+    Coloana* c1 = (tabela1)->getColoana(coloana1);
+    Coloana* c2 = (tabela2)->getColoana(coloana2);
+
+    if (c1 == nullptr || c2 == nullptr) {
+        cout << "Coloane gresite\n"; return t;
+    }
+    for (int i = 0; i < tabela1->coloane.size(); i++) {
+        t.addColumn(tabela1->coloane[i].getNume(), tabela1->coloane[i].getTipData());
+    }
+    for (int i = 0; i < tabela2->coloane.size(); i++) {
+        t.addColumn(tabela2->coloane[i].getNume(), tabela2->coloane[i].getTipData());
+    }
+
+    for (int i = 0; i < nrRanduri1; i++) {
+        for (int j = 0; j < nrRanduri2; j++) {
+            if ((*c1)[i] == (*c2)[j]) {
+                
+                Rand r = (tabela1)->getRand(i) + (tabela2)->getRand(j);
+                t.insertRand(r);
+            }
+        }
+    }
+
+    return t;
+}
+
+
+std::vector<size_t> widthColoane(const Tabela& t) {
+    std::vector<size_t> widthCol(t.getNrColoane());
+    for (size_t i = 0; i < t.getNrColoane(); i++) {
+        char* numeCol = t.coloane[i].getNume();
+        widthCol[i] = strlen(numeCol);
+        for (size_t j = 0; j < (int)t.coloane[0]; j++) {
+            if (!t.isDeleted(j)) {
+                widthCol[i] = std::max(widthCol[i], t.coloane[i][j].size());
+            }
+        }
+        delete[] numeCol;
+    }
+    return widthCol;
+}
+
+
+
+
 ostream& operator<<(ostream& out, const Tabela& t) {
     if (t.coloane.size() == 0) { out << "Tabela goala !" << '\n'; return out; }
+    std::vector<size_t> widthCol = widthColoane(t);
+
+    size_t nrLinii = 1;
+    for (auto w : widthCol) {
+        nrLinii += w + 3;
+    }
+    string separator(nrLinii, '-');
+    out << separator << "\n";
     //out << "ID" << "\t";
     for (int i = 0;i < t.coloane.size();i++) {
         char* nume = t.coloane[i].getNume();
-        out << nume << "\t";
+        out << "| "<< std::left << std::setw(widthCol[i]) << nume << " ";
         delete[] nume;
     }
-    out << '\n';
-
+    out << "| \n";
+    out << separator << "\n";
     int nrRanduri = (int)t.coloane[0];
     for (int i = 0;i < nrRanduri;i++) {
         if (t.deleted[i] == true) { continue; }
         Rand r = t.getRand(i);
         for (int j = 0;j < t.coloane.size();j++) {
             
-            out << r[j] << "\t";
-            
+            out << "| " << std::left << std::setw(widthCol[j]) << r[j] << " ";
         }
-        out << '\n';
+        out << "|" << "\n" << separator << "\n";
+        
     }
+    
     return out;
 }
 

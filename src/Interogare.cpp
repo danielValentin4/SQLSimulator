@@ -73,6 +73,10 @@ int Interogare::detectTip() {
         nrParametrii == 3)
         return TIP_DESCRIBE;
 
+    if (strcmp(parametrii[0], "join") == 0 &&
+        nrParametrii == 4)
+        return TIP_JOIN;
+    // join tabel1.id on tabel2.id
     return TIP_INVALID;
 }
 
@@ -362,6 +366,33 @@ void Interogare::executa(BazaDeDate& baza) {
         Tabela* t = baza.getTabela(parametrii[2]);
         if (t != nullptr) { t->describeTable(); }
         else { cout << "Tabela nu exista\n"; }
+        break;
+    }
+
+    case TIP_JOIN: {
+        // join tabel1.id on tabel2.id
+        char* copieParametru1 = new char[strlen(parametrii[1]) + 1];
+        strcpy(copieParametru1, parametrii[1]);
+        char* copieParametru2 = new char[strlen(parametrii[3]) + 1];
+        strcpy(copieParametru2, parametrii[3]);
+
+        char* numeTabel1 = strtok(copieParametru1, ".");
+        char* numeColoana1 = strtok(NULL, ".");
+        
+        char* numeTabel2 = strtok(copieParametru2, ".");
+        char* numeColoana2 = strtok(NULL, ".");
+
+        Tabela* tabela1 = baza.getTabela(numeTabel1);
+        Tabela* tabela2 = baza.getTabela(numeTabel2);
+
+        Tabela tabelaJoin = Tabela::joinTables(tabela1, tabela2, numeColoana1, numeColoana2);
+        
+        cout << tabelaJoin;
+
+
+        delete[] copieParametru1;
+        delete[] copieParametru2;
+        
         break;
     }
 

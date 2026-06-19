@@ -6,6 +6,7 @@
 #include <cstring>
 #include <vector>
 #include <unordered_map>
+#include <iomanip>
 #include "Coloana.h"
 #include "Rand.h"
 //using namespace std;
@@ -45,10 +46,13 @@ public:
     int findSlot();
     int getNrRanduri();
     bool isDeleted(int);
+    bool isDeleted(int) const;
     void setDeleted(int index);
     void setMap(unordered_map<string, int>);
     void afisareMap();
     void describeTable();
+    static Tabela joinTables(Tabela*, Tabela*, char* , char*);
     friend ostream& operator<<(ostream&,const Tabela&);
     friend istream& operator>>(istream&, Tabela&);
+    friend std::vector<size_t> widthColoane(const Tabela&);
 };
