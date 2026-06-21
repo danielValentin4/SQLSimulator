@@ -55,6 +55,7 @@ public:
     bool isDeleted(int) const;
     void setDeleted(int index);
     void setMap(unordered_map<string, int>);
+    unordered_map<string, int> getMap();
     void afisareMap();
     void describeTable();
     static Tabela joinTables(Tabela*, Tabela*, char* , char*);

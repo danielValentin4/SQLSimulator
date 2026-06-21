@@ -275,21 +275,31 @@ void Interogare::executa(BazaDeDate& baza) {
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
 
         int nrValori = nrParametrii - 3; 
-        
-
-        
-        //char** valori = new char* [nrValori];
         vector<string> valori;
         valori.reserve(nrValori + 1);
-        try {
-            std::stoi(parametrii[3]);
-            valori.emplace_back(parametrii[3]);
-        }
-        catch (...) {
+        if (strcmp(parametrii[3], "--") == 0) {
             int id = t->getColoana("ID")->getLastID();
             id++;
             valori.emplace_back(std::to_string(id));
-            valori.emplace_back(parametrii[3]);
+        } 
+        else {
+            try {
+                std::stoi(parametrii[3]);
+                //valori.emplace_back(parametrii[3]);
+            }
+            catch (...) {
+                cout << "ID-ul furnizat nu este numeric. \n";
+                return;
+            }
+
+            auto map = t->getMap();
+            if (map.find(parametrii[3]) != map.end()) {
+                cout << "ID-ul deja exista in tabela. \n";
+                return;
+            }
+            else {
+                valori.emplace_back(parametrii[3]);
+            }
         }
         for (int i = 1; i < nrValori; i++) {
             valori.emplace_back(parametrii[i + 3]);
@@ -514,7 +524,7 @@ void Interogare::executa(BazaDeDate& baza) {
         cout << "  aplicatie.exe alter <numeTabel> remove column <numeColoana>" << '\n';
         cout << '\n';
         cout << "Inserare rand:" << '\n';
-        cout << "  aplicatie.exe insert into <numeTabel> <val1> <val2> ..." << '\n';
+        cout << "  aplicatie.exe insert into <numeTabel> <id [--]> <val1> <val2> ..." << '\n';
         cout << '\n';
         cout << "Afisare tabela completa:" << '\n';
         cout << "  aplicatie.exe select <numeTabel>" << '\n';

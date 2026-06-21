@@ -446,6 +446,11 @@ void Tabela::setMap(unordered_map<string, int> map) {
     mapID = map;
 }
 
+unordered_map<string, int> Tabela::getMap()
+{
+    return unordered_map<string, int>(mapID);
+}
+
 void Tabela::afisareMap()
 {
     for (auto it : mapID) {
