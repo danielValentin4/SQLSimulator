@@ -4,7 +4,7 @@
 #include "Rand.h"
 #include "BazaDeDate.h"
 #include "Interogare.h"
-using namespace std;
+
 
 
 //g++ - I include src / main.cpp src / Coloana.cpp src / Tabela.cpp src / BazaDeDate.cpp src / Interogare.cpp src / Rand.cpp - o test.exe
@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     baza.incarca();
     Interogare i(argv, argc);
     if (!i) {
-        cout << "Comanda invalida!" << endl;
+        cout << "Comanda invalida!" << "\n";
         cout << i;
     }
     else i.executa(baza);

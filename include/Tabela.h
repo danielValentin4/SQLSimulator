@@ -7,10 +7,13 @@
 #include <vector>
 #include <unordered_map>
 #include <iomanip>
+#include <memory>
+#include <format>
 #include "Coloana.h"
+#include "Conditie.h"
 #include "Rand.h"
 //using namespace std;
-using std::stof, std::unordered_map;
+using std::stof, std::unordered_map, std::unique_ptr;
 class Tabela {
 private:
     char* numeTabela;
@@ -19,6 +22,7 @@ private:
     static int nrTabele;
     unordered_map<string, int> mapID;
     vector<bool> deleted;
+    
 public:
     Tabela();
     Tabela(const char*, vector<Coloana>, int, vector<bool>);
@@ -38,8 +42,10 @@ public:
     void addColumn(const char*, const char*);
     void removeColumn(const char*);
     void insertRand(const Rand&);
-    void selectRand(const char*, const char*, const char*);
-    int updateRand(const char*, const char*, const char*, const char*, const char*);
+    //void selectRand(const char*, const char*, const char*);
+    void selectRand(const NodConditie*);
+    //int updateRand(const char*, const char*, const char*, const char*, const char*);
+    int updateRand(const vector<std::pair<string, unique_ptr<ExpresieUpdate>>>&, const NodConditie*);
     void purgeTable(int);
     void addMap(string, int);
     int getIndex(string);

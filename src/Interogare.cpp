@@ -64,8 +64,7 @@ int Interogare::detectTip() {
 
     //update table student where Varsta > 10 to Varsta == 10*Varsta
     if (strcmp(parametrii[0], "update") == 0 &&
-        strcmp(parametrii[1], "table") == 0 &&
-        nrParametrii == 11)
+        nrParametrii >= 6)
         return TIP_UPDATE;
 
     if (strcmp(parametrii[0], "describe") == 0 &&
@@ -214,8 +213,19 @@ void Interogare::executa(BazaDeDate& baza) {
             }
         }
         else if (nrParametrii > 3) {
-            
-            const char* numeColoana = parametrii[3];
+            vector<string> tokens;
+            for (int i = 3; i < nrParametrii; i++) {
+                tokens.push_back(parametrii[i]);
+            }
+            try {
+                size_t pos = 0;
+                auto arbore = parseExpr(tokens, pos);
+                t->selectRand(arbore.get());
+            }
+            catch (runtime_error& e) {
+                cout << e.what() << '\n';
+            }
+            /*const char* numeColoana = parametrii[3];
             const char* op = parametrii[4];
             const char* valoare = parametrii[5];
             if (t == nullptr) {
@@ -226,7 +236,8 @@ void Interogare::executa(BazaDeDate& baza) {
             }
             catch (runtime_error e) {
                 cout << e.what() << '\n';
-            }
+            }*/
+
         }
         break;
     }
@@ -292,7 +303,7 @@ void Interogare::executa(BazaDeDate& baza) {
     }
 
 
-    case TIP_WHERE: {
+    /*case TIP_WHERE: {
         
         if (nrParametrii < 3) {
             cout << "Comanda invalida" << "\n";
@@ -308,7 +319,7 @@ void Interogare::executa(BazaDeDate& baza) {
         }
         t->selectRand(numeColoana, op, valoare);
         break;
-    }
+    }*/
 
 
     case TIP_SHOW_TABLES: {
@@ -349,15 +360,106 @@ void Interogare::executa(BazaDeDate& baza) {
 
 
     case TIP_UPDATE: {
-        //update table student where Varsta > 10 to Varsta == 10
-        Tabela* tabela = baza.getTabela(parametrii[2]);
-        char* numeColoana = parametrii[4];
-        char* op = parametrii[5];
-        char* valoareCheck = parametrii[6];
-        char* coloanaSet = parametrii[8];
-        char* valoareSet = parametrii[10];
-        int numarActualizari = tabela->updateRand(numeColoana, op, valoareCheck, coloanaSet, valoareSet);
-        cout << "Au fost realizate " << numarActualizari << " actualizari" << "\n";
+        if (nrParametrii < 6) {
+            cout << "Comanda UPDATE invalida! Sintaxa: update <tabela> set <col> = <valoare / operator> [;<col2> = <expr2> ...] [where <conditie>]\n";
+            return;
+        }
+
+        Tabela* tabela = baza.getTabela(parametrii[1]);
+        if (tabela == nullptr) {
+            cout << "Tabela nu exista!\n";
+            return;
+        }
+
+        if (strcmp(parametrii[2], "set") != 0) {
+            cout << "Comanda UPDATE invalida! Lipseste cuvantul cheie 'set'.\n";
+            return;
+        }
+
+        
+        int indexWhere = -1;
+        for (int i = 3; i < nrParametrii; i++) {
+            if (strcmp(parametrii[i], "where") == 0) {
+                indexWhere = i;
+                break;
+            }
+        }
+
+        
+        vector<string> setTokens;
+        int limit = (indexWhere != -1) ? indexWhere : nrParametrii;
+        for (int i = 3; i < limit; i++) {
+            string t = parametrii[i];
+            if (t.length() > 1 && t.back() == ';') {
+                setTokens.push_back(t.substr(0, t.length() - 1));
+                setTokens.push_back(";");
+            }
+            else {
+                setTokens.push_back(t);
+            }
+        }
+
+        
+        vector<std::pair<string, unique_ptr<ExpresieUpdate>>> setari;
+        try {
+            size_t pos = 0;
+            while (pos < setTokens.size()) {
+                string colName = setTokens[pos++];
+                if (pos >= setTokens.size() || setTokens[pos] != "=") {
+                    throw runtime_error("Sintaxa invalida set: se astepta '=' dupa coloana '" + colName + "'");
+                }
+                pos++; 
+
+                vector<string> exprTokens;
+                while (pos < setTokens.size() && setTokens[pos] != ";") {
+                    exprTokens.push_back(setTokens[pos++]);
+                }
+
+                if (exprTokens.empty()) {
+                    throw runtime_error("Expresie vida pentru coloana '" + colName + "'");
+                }
+
+                size_t exprPos = 0;
+                auto exprNode = parseExprUpdate(exprTokens, exprPos);
+                setari.emplace_back(colName, std::move(exprNode));
+
+                if (pos < setTokens.size() && setTokens[pos] == ";") {
+                    pos++; 
+                }
+            }
+        }
+        catch (const runtime_error& e) {
+            cout << "Eroare la parsarea setarilor: " << e.what() << '\n';
+            return;
+        }
+
+        
+        unique_ptr<NodConditie> arboreConditie = nullptr;
+        if (indexWhere != -1) {
+            vector<string> whereTokens;
+            for (int i = indexWhere + 1; i < nrParametrii; i++) {
+                whereTokens.push_back(parametrii[i]);
+            }
+            if (!whereTokens.empty()) {
+                try {
+                    size_t posWhere = 0;
+                    arboreConditie = parseExpr(whereTokens, posWhere);
+                }
+                catch (const runtime_error& e) {
+                    cout << "Eroare la parsarea clauzei WHERE: " << e.what() << '\n';
+                    return;
+                }
+            }
+        }
+
+        
+        try {
+            int nrActualizari = tabela->updateRand(setari, arboreConditie.get());
+            cout << "Au fost realizate " << nrActualizari << " actualizari." << '\n';
+        }
+        catch (const runtime_error& e) {
+            cout << "Eroare in timpul actualizarii datelor: " << e.what() << '\n';
+        }
         break;
     }
 
@@ -421,7 +523,11 @@ void Interogare::executa(BazaDeDate& baza) {
         cout << "  aplicatie.exe select <numeTabel> <index>" << '\n';
         cout << '\n';
         cout << "Afisare rand cu clauze:" << '\n';
-        cout << "  aplicatie.exe select <numeTabel> where <coloana> <operator> <conditie>" << '\n';
+        cout << "  aplicatie.exe select <numeTabel> where <coloana> <operator> <conditie> [AND/OR] ...." << '\n';
+        cout << "  Operatori: 'like', toti operatorii aritmetici " << '\n';
+        cout << '\n';
+        cout << "Update rand:" << '\n';
+        cout << "  aplicatie.exe update <numeTabel> set <coloana> = <valoare / operatie> [where ....]" << '\n';
         cout << "  Operatori: 'like', toti operatorii aritmetici " << '\n';
         cout << '\n';
         cout << "Stergere tabela:" << '\n';
@@ -434,7 +540,7 @@ void Interogare::executa(BazaDeDate& baza) {
         cout << "  aplicatie.exe show tables" << '\n';
         cout << '\n';
         cout << "Stergere totala a datelor din o tabela:" << '\n';
-        cout << "  aplicatie.exe purge table <numeTabel> (--full si pentru coloane)" << '\n';
+        cout << "  aplicatie.exe purge table <numeTabel> [--full]" << '\n';
         cout << '\n';
         cout << "Ajutor:" << '\n';
         cout << "  aplicatie.exe --help" << '\n';

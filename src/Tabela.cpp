@@ -150,6 +150,7 @@ Rand Tabela::getRand(int index) const {
     return Rand(0, gol);
 }
 
+
 bool verificaConditie(const string& valoareColoana, const string& op, const string& valoareData, TipData tip) {
     if (op == "=") return valoareColoana == valoareData;
     if (op == "like") return valoareColoana.find(valoareData) != string::npos;
@@ -176,13 +177,61 @@ bool verificaConditie(const string& valoareColoana, const string& op, const stri
     return false;
 }
 
-
-void Tabela::selectRand(const char* coloana, const char* op, const char* valoare) {
-    Coloana* c = getColoana(coloana);
-    if (c == nullptr) {
-        cout << "Coloana " << coloana << " nu exista" << "\n";
+bool evalueazaConditie(const NodConditie* nod, Tabela* t, int indexRand) {
+    if (nod->tip == TipNod::CONDITIE) {
+        Coloana* c = t->getColoana(nod->coloana.c_str());
+        if (c == nullptr) {
+            throw runtime_error("Coloana " + nod->coloana + " nu exista");
+        }
+        return verificaConditie((*c)[indexRand], nod->op, nod->valoare, *c->getTip());
     }
-    
+    bool rezStang = evalueazaConditie(nod->stang.get(), t, indexRand);
+    if (nod->tip == TipNod::AND) {
+        return rezStang && evalueazaConditie(nod->drept.get(), t, indexRand);
+    }
+    else {
+        return rezStang || evalueazaConditie(nod->drept.get(), t, indexRand);
+    }
+}
+
+string evalueazaExpresieUpdate(const ExpresieUpdate* expresie, Tabela* t, int indexRand) {
+    if (expresie == nullptr) {
+        return "";
+    }
+    if (expresie->tipOperatie == TipOperatie::VALOARE) {
+        if (expresie->tipValoare == TipValoare::NUMBER) {
+            return expresie->valoare;
+        }
+
+        Coloana* c = t->getColoana(expresie->valoare.c_str());
+        if (c != nullptr) {
+            return (*c)[indexRand];
+        }
+        return expresie->valoare;
+    }
+    try {
+        double stang = std::stod(evalueazaExpresieUpdate(expresie->stang.get(), t, indexRand));
+        double drept = std::stod(evalueazaExpresieUpdate(expresie->drept.get(), t, indexRand));
+        double rez = 0.0;
+        if (expresie->op == "+") rez = stang + drept;
+        else if (expresie->op == "-") rez = stang - drept;
+        else if (expresie->op == "*") rez = stang * drept;
+        else if (expresie->op == "/") {
+            if (drept == 0.0) {
+                throw runtime_error("Impartire la 0");
+            }
+            rez = stang / drept;
+        }
+        return std::format("{:.2f}", rez);
+    }
+    catch (...) {
+        throw runtime_error("Operatie invalida. Ati incercat operatii aritmetice pe string-uri");
+    }
+}
+
+
+void Tabela::selectRand(const NodConditie* conditie) {
+   
     for (size_t i = 0; i < coloane.size(); i++) {
         char* nume = coloane[i].getNume();
         cout << nume << "\t";
@@ -193,37 +242,75 @@ void Tabela::selectRand(const char* coloana, const char* op, const char* valoare
     int nrRanduri = coloane.empty() ? 0 : int(coloane[0]);
     for (int i = 0; i < nrRanduri; i++) {
         if (deleted[i] == true) { continue; }
-        string valoareColoana = (*c)[i];
-        if (verificaConditie(valoareColoana, op, valoare, *c->getTip())) {
+        if (evalueazaConditie(conditie, this, i)) {
             cout << getRand(i);
         }
     }
 
 }
 
-int Tabela::updateRand(const char* coloana, const char* op, const char* valoareCheck, const char* coloanaSet, const char* valoareSet)
+
+int Tabela::updateRand(const vector<std::pair<string, unique_ptr<ExpresieUpdate>>>& setari, const NodConditie* clauza)
 {
-    int numar = 0;
-    Coloana* coloanaFind = getColoana(coloana);
-    Coloana* coloanaSetare = getColoana(coloanaSet);
-    if (coloanaFind == nullptr) {
-        cout << "Coloana " << coloana << " nu exista" << "\n";
-    }
-    if (coloanaSet == nullptr) {
-        cout << "Coloana " << coloana << " nu exista" << "\n";
+    int nrActualizari = 0;
+    for (const auto& setare : setari) {
+        if (getColoana(setare.first.c_str()) == nullptr) {
+            cout << "Coloana nu exista\n";
+            return 0;
+        }
     }
 
     int nrRanduri = coloane.empty() ? 0 : (int)coloane[0];
+
     for (int i = 0; i < nrRanduri; i++) {
-        if (deleted[i] == true) { continue; }
-        string valoareCol = (*coloanaFind)[i];
-        if (verificaConditie(valoareCol, op, valoareCheck, *coloanaFind->getTip())) {
-            (*coloanaSetare)[i] = valoareSet;
-            numar++;
+        if (deleted[i] == true) continue;
+
+        bool conditieIndeplinita = true;
+        if (clauza != nullptr) {
+            conditieIndeplinita = evalueazaConditie(clauza, this, i);
+        }
+
+        if (conditieIndeplinita) {
+            for (const auto& setare : setari) {
+                Coloana* colSet = getColoana(setare.first.c_str());
+                try {
+                    string valoare = evalueazaExpresieUpdate(setare.second.get(), this, i);
+                    (*colSet)[i] = valoare;
+                }
+                catch (runtime_error e) {
+                    cout << e.what() << "\n";
+                    nrActualizari--;
+                }
+            }
+            nrActualizari++;
         }
     }
-    return numar;
+    return nrActualizari;
 }
+
+//int Tabela::updateRand(const char* coloana, const char* op, const char* valoareCheck, const char* coloanaSet, const char* valoareSet)
+//{
+//    int numar = 0;
+//    Coloana* coloanaFind = getColoana(coloana);
+//    Coloana* coloanaSetare = getColoana(coloanaSet);
+//    if (coloanaFind == nullptr) {
+//        cout << "Coloana " << coloana << " nu exista" << "\n";
+//    }
+//    if (coloanaSet == nullptr) {
+//        cout << "Coloana " << coloana << " nu exista" << "\n";
+//    }
+//
+//    int nrRanduri = coloane.empty() ? 0 : (int)coloane[0];
+//    for (int i = 0; i < nrRanduri; i++) {
+//        if (deleted[i] == true) { continue; }
+//        string valoareCol = (*coloanaFind)[i];
+//        if (verificaConditie(valoareCol, op, valoareCheck, *coloanaFind->getTip())) {
+//            (*coloanaSetare)[i] = valoareSet;
+//            numar++;
+//        }
+//    }
+//    return numar;
+//}
 
 
 void Tabela::addColumn(const char* nume, const char* tipData) {
@@ -303,6 +390,8 @@ void Tabela::insertRand(const Rand& r) {
     }
 
 }
+
+
 
 void Tabela::purgeTable(int conditie) {
     if (conditie == 1) {
