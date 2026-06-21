@@ -473,6 +473,19 @@ void Tabela::describeTable()
 
 }
 
+
+unordered_map<string, vector<int>> makeIndex(Tabela* tabela, char* coloana) {
+    unordered_map<string, vector<int>> index;
+    Coloana* c = tabela->getColoana(coloana);
+    index.reserve((int)(*c));
+    for (size_t i = 0; i < (int)(*c); i++) {
+        index[(*c)[i]].push_back(i);
+    }
+    return index;
+}
+
+
+
 Tabela Tabela::joinTables(Tabela* tabela1, Tabela* tabela2, char* coloana1, char* coloana2)
 {
     Tabela t{};
@@ -480,10 +493,11 @@ Tabela Tabela::joinTables(Tabela* tabela1, Tabela* tabela2, char* coloana1, char
     int nrRanduri2 = (int)(tabela2->coloane[0]);
     Coloana* c1 = (tabela1)->getColoana(coloana1);
     Coloana* c2 = (tabela2)->getColoana(coloana2);
-
+    
     if (c1 == nullptr || c2 == nullptr) {
         cout << "Coloane gresite\n"; return t;
     }
+    auto index = makeIndex(tabela2, coloana2);
     for (int i = 0; i < tabela1->coloane.size(); i++) {
         t.addColumn(tabela1->coloane[i].getNume(), tabela1->coloane[i].getTipData());
     }
@@ -492,12 +506,9 @@ Tabela Tabela::joinTables(Tabela* tabela1, Tabela* tabela2, char* coloana1, char
     }
 
     for (int i = 0; i < nrRanduri1; i++) {
-        for (int j = 0; j < nrRanduri2; j++) {
-            if ((*c1)[i] == (*c2)[j]) {
-                
-                Rand r = (tabela1)->getRand(i) + (tabela2)->getRand(j);
-                t.insertRand(r);
-            }
+        for (auto a : index[(*c1)[i]]) {
+            Rand r = (tabela1)->getRand(i) + (tabela2)->getRand(a);
+            t.insertRand(r);
         }
     }
 
