@@ -151,29 +151,86 @@ Rand Tabela::getRand(int index) const {
 }
 
 
+string convertDate(string date) {
+    string newDate;
+    std::smatch matches;
+    unordered_map<string,string> months = {
+        {"January", "01"}, {"Ianuarie", "01"},
+        {"February", "02"}, {"Februarie", "02"},
+        {"March", "03"}, {"Martie", "03"},
+        {"April", "04"}, {"Aprilie", "04"},
+        {"May", "05"}, {"Mai", "05"},
+        {"June", "06"}, {"Iunie", "06"},
+        {"July", "07"}, {"Iulie", "07"},
+        {"August", "08"}, {"August", "08"},
+        {"September", "09"}, {"Septembrie", "09"},
+        {"October", "10"}, {"Octombrie", "10"},
+        {"November", "11"}, {"Noiembrie", "11"},
+        {"December", "12"}, {"Decembrie", "12"},
+    };
+    //Cazul 1: DD-MM-YYYY  (ex: 01-12-2021)
+    std::regex case1(R"(^(0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-(\d{4})$)");
+
+    // Cazul 2: YYYY-MM-DD  (ex: 2024-01-02)
+    std::regex case2(R"(^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$)");
+
+    // Cazul 3: DD LUNA YYYY  (ex: 1 Martie/March 2020, 10 Martie/March 2019)
+    std::regex case3(R"(^(0?[1-9]|[12]\d|3[01])\s(January|February|March|April|May|June|July|August|September|October|November|December|Ianuarie|Februarie|Martie|Aprilie|Mai|Iunie|Iulie|August|Septembrie|Octombrie|Noiembrie|Decembrie)\s(\d{4})$)");
+    
+    if (std::regex_match(date, matches, case1)) {
+        newDate = matches[3].str() + "-" + matches[2].str() + "-" + matches[1].str();
+    }
+    else if (std::regex_match(date, matches, case2)) {
+        newDate = date;
+    }
+    else if (std::regex_match(date, matches, case3)) {
+        string an = matches[3].str();
+        string zi = matches[1].str();
+        string luna = months[matches[2].str()];
+        newDate = an + "-" + luna + "-" + zi;
+    }
+    else {
+        throw runtime_error("Formatul datei este incorect. Cele trei formate acceptate sunt: \n DD-MM-YYY, YYYY-MM-DD, DD LUNA YYYY");
+    }
+    return newDate;
+}
+
+
 bool verificaConditie(const string& valoareColoana, const string& op, const string& valoareData, TipData tip) {
     if (op == "=") return valoareColoana == valoareData;
     if (op == "like") return valoareColoana.find(valoareData) != string::npos;
 
-    try {
-        float valColoanaFloat = std::stof(valoareColoana);
-        float valDataFloat = std::stof(valoareData);
-        if (tip == TipData::Numar) {
-            if (op == ">") return valColoanaFloat > valDataFloat;
-            if (op == "<") return valColoanaFloat < valDataFloat;
+    if (tip == TipData::Data) {
+        try {
+            string dateValoareColoana = convertDate(valoareColoana);
+            string dateValoareData = convertDate(valoareData);
+            if (op == ">")  return dateValoareColoana > dateValoareData;
+            if (op == "<")  return dateValoareColoana < dateValoareData;
+            if (op == ">=") return dateValoareColoana >= dateValoareData;
+            if (op == "<=") return dateValoareColoana <= dateValoareData;
+        }
+        catch (runtime_error& e) {
+            cout << e.what() << "\n";
+            return false;
+        }
+    }
+    else if (tip == TipData::Numar) {
+        try {
+            float valColoanaFloat = std::stof(valoareColoana);
+            float valDataFloat = std::stof(valoareData);
+            if (op == ">")  return valColoanaFloat > valDataFloat;
+            if (op == "<")  return valColoanaFloat < valDataFloat;
             if (op == ">=") return valColoanaFloat >= valDataFloat;
             if (op == "<=") return valColoanaFloat <= valDataFloat;
         }
-        else if (tip == TipData::Data) {
-            // de facut pt tip data .
-        }
-        else {
-            
+        catch (...) {
+            throw runtime_error("Clauza where folosita gresit. Pentru comparare string folositi like. Pt valori folositi operatori aritmetici.");
         }
     }
-    catch (...) {
-        throw runtime_error("Clauza where folosita gresit. Pentru comparare string folositi like. Pt valori folositi operatori aritmetici.");
+    else {
+        cout << "Nu ati folosit operatorul corect.\n";
     }
+
     return false;
 }
 

@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <memory>
 #include <format>
+#include <regex>
 #include "Coloana.h"
 #include "Conditie.h"
 #include "Rand.h"
