@@ -22,6 +22,7 @@ constexpr auto TIP_DELETE = 11;
 constexpr auto TIP_UPDATE = 12;
 constexpr auto TIP_DESCRIBE = 13;
 constexpr auto TIP_JOIN = 14;
+constexpr auto TIP_RESTORE = 15;
 
 class Interogare {
 private:

@@ -22,8 +22,7 @@ private:
     const int idTabela;
     static int nrTabele;
     unordered_map<string, int> mapID;
-    vector<bool> deleted;
-    
+    vector<bool> deleted; 
 public:
     Tabela();
     Tabela(const char*, vector<Coloana>, int, vector<bool>);
@@ -55,6 +54,7 @@ public:
     bool isDeleted(int);
     bool isDeleted(int) const;
     void setDeleted(int index);
+    void restoreDeletedRow(char*);
     void setMap(unordered_map<string, int>);
     unordered_map<string, int> getMap();
     void afisareMap();

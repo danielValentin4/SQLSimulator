@@ -20,6 +20,7 @@ Tabela::Tabela(const char* numeTabela, vector<Coloana> coloane, int idTabela, ve
         this->numeTabela = new char[strlen("N/A") + 1];
         strcpy(this->numeTabela, "N/A");
     }
+    
     Tabela::nrTabele++;
 }
 
@@ -496,7 +497,15 @@ bool Tabela::isDeleted(int index) const
 
 void Tabela::setDeleted(int index) {
     this->deleted[index] = true;
+    
 }
+
+void Tabela::restoreDeletedRow(char* ID)
+{
+    int index = mapID[ID];
+    deleted[index] = false;
+}
+
 
 void Tabela::setMap(unordered_map<string, int> map) {
     mapID.clear();

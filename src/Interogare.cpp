@@ -76,6 +76,13 @@ int Interogare::detectTip() {
         nrParametrii == 4)
         return TIP_JOIN;
     // join tabel1.id on tabel2.id
+
+    if (strcmp(parametrii[0], "restore") == 0 &&
+        strcmp(parametrii[1], "from") == 0 &&
+        nrParametrii == 4)
+        return TIP_RESTORE;
+
+
     return TIP_INVALID;
 }
 
@@ -309,6 +316,7 @@ void Interogare::executa(BazaDeDate& baza) {
         
         
         cout << "Rand inserat!" << '\n';
+        
         break;
     }
 
@@ -509,6 +517,14 @@ void Interogare::executa(BazaDeDate& baza) {
     }
 
 
+    case TIP_RESTORE: {
+        Tabela* t = baza.getTabela(parametrii[2]);
+        t->restoreDeletedRow(parametrii[3]);
+        cout << "Randul sters a fost restaurat. \n";
+        break;
+    }
+
+
     case TIP_HELP: {
         cout << "===============================================" << '\n';
         cout << "         SQLSimulator - Comenzi disponibile   " << '\n';
@@ -551,6 +567,9 @@ void Interogare::executa(BazaDeDate& baza) {
         cout << '\n';
         cout << "Stergere totala a datelor din o tabela:" << '\n';
         cout << "  aplicatie.exe purge table <numeTabel> [--full]" << '\n';
+        cout << '\n';
+        cout << "Restaurarea unui rand dintr-o tabela:" << '\n';
+        cout << "  aplicatie.exe restore from <numeTabel> [ID]" << '\n';
         cout << '\n';
         cout << "Ajutor:" << '\n';
         cout << "  aplicatie.exe --help" << '\n';
