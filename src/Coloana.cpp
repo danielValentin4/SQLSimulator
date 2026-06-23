@@ -181,14 +181,10 @@ const string& Coloana::operator[](int index) const {
 }
 
 ostream& operator<<(ostream& out, const Coloana& c) {
-    out << "Nume coloana: " << c.nume << '\n';
-    out << "Valori: ";
+    out << c.nume << '\n';
     if (c.date.size() > 0)
         for (int i = 0; i < c.date.size(); i++)
-            out << c.date[i] << " ";
-    else
-        out << "Nu exista valori";
-    out << '\n';
+            out << c.date[i] << '\n';
     return out;
 }
 

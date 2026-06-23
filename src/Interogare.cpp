@@ -197,16 +197,21 @@ void Interogare::executa(BazaDeDate& baza) {
     }
 
     case TIP_SELECT: {
+        // select student 2
+        // select * from student , 
+        // select Nume,Varsta from student
+        // select * from student where ...
         
         if (nrParametrii < 2) { cout << "Comanda invalida!" << '\n'; return; }
-        Tabela* t = baza.getTabela(parametrii[1]);
-        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
-        if (nrParametrii == 2) {
-            // afiseaza toata tabela
-            cout << *t;
-            t->afisareMap();
+        Tabela* t{};
+        if (nrParametrii == 3) {
+            t = baza.getTabela(parametrii[1]);
         }
-        else if (nrParametrii == 3) {
+        else {
+            t = baza.getTabela(parametrii[3]);
+        }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
+        if (nrParametrii == 3) {
             // afiseaza randul cu indexul dat
             int index = atoi(parametrii[2]);
             try {
@@ -220,31 +225,52 @@ void Interogare::executa(BazaDeDate& baza) {
             }
         }
         else if (nrParametrii > 3) {
-            vector<string> tokens;
-            for (int i = 3; i < nrParametrii; i++) {
-                tokens.push_back(parametrii[i]);
+            if (strcmp(parametrii[1], "*") == 0) {
+                if (nrParametrii > 4) {
+                    if (strcmp(parametrii[4], "where") == 0) {
+                        vector<string> tokens;
+                        for (int i = 5; i < nrParametrii; i++) {
+                            tokens.push_back(parametrii[i]);
+                        }
+                        try {
+                            size_t pos = 0;
+                            auto arbore = parseExpr(tokens, pos);
+                            t->selectRand(arbore.get());
+                        }
+                        catch (runtime_error& e) {
+                            cout << e.what() << '\n';
+                        }
+                    }
+                }
+                else {
+                    cout << *t;
+                    t->afisareMap();
+                }
             }
-            try {
-                size_t pos = 0;
-                auto arbore = parseExpr(tokens, pos);
-                t->selectRand(arbore.get());
+            else {
+                // Nume,Varsta
+                // var1 = Nume
+                // var2 = Varsta
+                vector<string> columns;
+                char* token = strtok(parametrii[1], ",");
+                while (token != nullptr) {
+                    columns.emplace_back(token);
+                    token = strtok(nullptr, ",");
+                }
+                vector<Coloana*> coloane;
+                coloane.reserve(columns.size());
+                for (auto col : columns) {
+                    coloane.emplace_back(t->getColoana(col.c_str()));
+                    cout << col << "\t";
+                }
+                cout << "\n";
+                for (int i = 0; i < t->getNrRanduri(); i++) {
+                    for (auto c : coloane) {
+                        cout << (*c)[i] << "\t";
+                    }
+                    cout << "\n";
+                }
             }
-            catch (runtime_error& e) {
-                cout << e.what() << '\n';
-            }
-            /*const char* numeColoana = parametrii[3];
-            const char* op = parametrii[4];
-            const char* valoare = parametrii[5];
-            if (t == nullptr) {
-                cout << "Tabela inexistenta!";
-            }
-            try {
-                t->selectRand(numeColoana, op, valoare);
-            }
-            catch (runtime_error e) {
-                cout << e.what() << '\n';
-            }*/
-
         }
         break;
     }
