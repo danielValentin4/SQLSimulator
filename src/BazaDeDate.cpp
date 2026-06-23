@@ -123,7 +123,6 @@ void BazaDeDate::createTable(const char* nume) {
 }
 
 bool BazaDeDate::dropTable(const char* nume) {
-    /*int index = -1;*/
     for (size_t i = 0; i < tabele.size(); i++) {
         char* n = tabele[i].getNumeTabela();
         if (strcmp(n, nume) == 0) {
@@ -134,19 +133,11 @@ bool BazaDeDate::dropTable(const char* nume) {
         }
         delete[] n;
     }
-    /*if (index == -1) return false;
-    Tabela* temp = new Tabela[nrTabele - 1];
-    for (int i = 0, j = 0; i < nrTabele; i++)
-        if (i != index) temp[j++] = tabele[i];
-    delete[] tabele;
-    tabele = temp;
-    nrTabele--;
-    return true;*/
     return false;
 }
 
 
-//folosim fisiere binare pt retinerea informatiilor
+
 void scrieString(ofstream& f, string str) {
     int len;
     if (str.length() > 0) {
@@ -157,7 +148,6 @@ void scrieString(ofstream& f, string str) {
     }
     char* strC = new char[str.length() + 1];
     strcpy(strC, str.c_str());
-    //int len = str ? strlen(str) : 0;
     f.write((char*)&len, sizeof(int));
     if (len > 0) f.write(strC, len);
 }
@@ -171,11 +161,12 @@ char* citesteString(ifstream& f) {
     return str;
 }
 
-void BazaDeDate::salveaza() {
-    
+void BazaDeDate::salveaza(Tabela* t) {
     char numeFisier[200];
-    strcpy(numeFisier, denumireBaza);
+    char* numeTabela = t->getNumeTabela();
+    strcpy(numeFisier, numeTabela);
     strcat(numeFisier, ".bin");
+
 
     ofstream f(numeFisier, ios::binary);
     if (!f.is_open()) {
@@ -183,53 +174,40 @@ void BazaDeDate::salveaza() {
         return;
     }
 
-    size_t nrTabele = tabele.size();
-    scrieString(f, denumireBaza);
-    f.write((char*)&nrTabele, sizeof(size_t));
-
-    for (int i = 0; i < nrTabele; i++) {
-        char* numeT = tabele[i].getNumeTabela();
-        scrieString(f, numeT);
-        delete[] numeT;
-
-        int nrRanduriDel = tabele[i].getNrRanduri();
-        f.write((char*)&nrRanduriDel, sizeof(int));
-        for (int k = 0; k < nrRanduriDel; k++) {
-            bool d = tabele[i].isDeleted(k);
-            f.write((char*)&d, sizeof(bool));
-        }
-
-
-        int nrCol = tabele[i].getNrColoane();
-        f.write((char*)&nrCol, sizeof(int));
-
-        for (int j = 0; j < nrCol; j++) {
-            Coloana& c = tabele[i][j];
-            char* numeC = c.getNume();
-            scrieString(f, numeC);
-            delete[] numeC;
-            f.write((char*)c.getTip(), sizeof(int));
-            int sz = (int)c;
-            f.write((char*)&sz, sizeof(int));
-            for (int k = 0; k < sz; k++)
-                scrieString(f, c[k]);
-        }
-
-        /*int nrRanduriDel = tabele[i].getNrRanduri();
-        f.write((char*)&nrRanduriDel, sizeof(int));
-        for (int k = 0; k < nrRanduriDel; k++) {
-            bool d = tabele[i].isDeleted(k);
-            f.write((char*)&d, sizeof(bool));
-        }*/
+    
+    scrieString(f, numeTabela);
         
+    int nrRanduriDel = t->getNrRanduri();
+    f.write((char*)&nrRanduriDel, sizeof(int));
+    for (int k = 0; k < nrRanduriDel; k++) {
+          bool d = t->isDeleted(k);
+          f.write((char*)&d, sizeof(bool));
     }
+
+
+        
+    int nrCol = t->getNrColoane();
+    f.write((char*)&nrCol, sizeof(int));
+
+    for (int j = 0; j < nrCol; j++) {
+        Coloana& c = (*t)[j];
+        char* numeC = c.getNume();
+        scrieString(f, numeC);
+        delete[] numeC;
+        f.write((char*)c.getTip(), sizeof(int));
+        int sz = (int)c;
+        f.write((char*)&sz, sizeof(int));
+        for (int k = 0; k < sz; k++)
+           scrieString(f, c[k]);
+        }   
     f.close();
     cout << "Salvat in " << numeFisier << '\n';
+    delete[] numeTabela;
 }
 
-void BazaDeDate::incarca() {
+void BazaDeDate::incarca(char* numeTabela) {
     char numeFisier[200];
-    strcpy(numeFisier, denumireBaza);
+    strcpy(numeFisier, numeTabela);
     strcat(numeFisier, ".bin");
 
     ifstream f(numeFisier, ios::binary);
@@ -238,65 +216,46 @@ void BazaDeDate::incarca() {
         return;
     }
 
-    /*if (tabele != nullptr) delete[] tabele;*/
-    if (denumireBaza != nullptr) delete[] denumireBaza;
-    size_t nrTabele = tabele.size();
-    denumireBaza = citesteString(f);
-    f.read((char*)&nrTabele, sizeof(size_t));
-    tabele.reserve(nrTabele);
+    char* numeT = citesteString(f);
 
-    for (int i = 0; i < nrTabele; i++) {
-        char* numeT = citesteString(f);
-
-        int nrRanduriDeleted = 0;
-        f.read((char*)&nrRanduriDeleted, sizeof(int));
-        vector<bool> deletedVec(nrRanduriDeleted, false);
-        for (int j = 0; j < nrRanduriDeleted; j++) {
-            bool d{};
-            f.read((char*)&d, sizeof(bool));
-            deletedVec[j] = d;
-        }
-
-        int nrCol = 0;
-        f.read((char*)&nrCol, sizeof(int));
-
-        //Coloana* cols = new Coloana[nrCol];
-        vector<Coloana> cols(nrCol);
-        for (int j = 0; j < nrCol; j++) {
-            char* numeC = citesteString(f);
-            int nrTipData;
-            f.read((char*)&nrTipData, sizeof(int));
-            TipData tip = (TipData)nrTipData;
-            int sz = 0;
-            f.read((char*)&sz, sizeof(int));
-            //char** valori = new char* [sz];
-            vector<string> valori;
-            valori.reserve(sz);
-            for (int k = 0; k < sz; k++) {
-                char* buffer = citesteString(f);
-                valori.emplace_back(buffer);
-                delete[] buffer;
-            }
-
-            cols[j] = Coloana(numeC, valori, tip);
-            delete[] numeC;
-        }
-
-        /*int nrRanduriDeleted = 0;
-        f.read((char*)&nrRanduriDeleted, sizeof(int));
-        vector<bool> deletedVec(nrRanduriDeleted, false);
-        for (int j = 0; j < nrRanduriDeleted; j++) {
-            bool d{};
-            f.read((char*)&d, sizeof(bool));
-            deletedVec[j] = d;
-        }*/
-
-        tabele.emplace_back(numeT, cols, i, deletedVec);
-        for (int k = 0; k < nrRanduriDeleted; k++) {
-            tabele[i].addMap(cols[0][k], k);
-        }
-        delete[] numeT;
+    int nrRanduriDeleted = 0;
+    f.read((char*)&nrRanduriDeleted, sizeof(int));
+    vector<bool> deletedVec(nrRanduriDeleted, false);
+    for (int j = 0; j < nrRanduriDeleted; j++) {
+         bool d{};
+         f.read((char*)&d, sizeof(bool));
+         deletedVec[j] = d;
     }
+
+    int nrCol = 0;
+    f.read((char*)&nrCol, sizeof(int));
+
+        
+    vector<Coloana> cols(nrCol);
+    for (int j = 0; j < nrCol; j++) {
+         char* numeC = citesteString(f);
+         int nrTipData;
+         f.read((char*)&nrTipData, sizeof(int));
+         TipData tip = (TipData)nrTipData;
+         int sz = 0;
+         f.read((char*)&sz, sizeof(int));
+         vector<string> valori;
+         valori.reserve(sz);
+         for (int k = 0; k < sz; k++) {
+             char* buffer = citesteString(f);
+             valori.emplace_back(buffer);
+             delete[] buffer;
+         }
+
+         cols[j] = Coloana(numeC, valori, tip);
+         delete[] numeC;
+    }
+
+    tabele.emplace_back(numeT, cols, tabele.size() - 1, deletedVec);
+    for (int k = 0; k < nrRanduriDeleted; k++) {
+        tabele[tabele.size() - 1].addMap(cols[0][k], k);
+    }
+    delete[] numeT;
     f.close();
 }
 

@@ -7,19 +7,30 @@
 
 
 
-//g++ - I include src / main.cpp src / Coloana.cpp src / Tabela.cpp src / BazaDeDate.cpp src / Interogare.cpp src / Rand.cpp - o test.exe
 
 int main(int argc, char* argv[]) {
     vector<Tabela> tabele;
     BazaDeDate baza("mydb", tabele , 1);
-    baza.incarca();
+    if (std::filesystem::exists("mydb")) {
+        if (std::filesystem::is_directory("mydb")) {
+            std::filesystem::current_path("mydb");
+        }
+        else {
+            cout << "A fost gasit fisier, nu director.\n";
+        }
+    }
+    else {
+        cout << "Directorul nu exista, se creeaza unul.\n";
+        std::filesystem::create_directory("mydb");
+    }
+    
     Interogare i(argv, argc);
     if (!i) {
         cout << "Comanda invalida!" << "\n";
         cout << i;
     }
     else i.executa(baza);
-    baza.salveaza();
+    
     
 	return 0;
 }

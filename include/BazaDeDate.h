@@ -31,8 +31,8 @@ public:
     void showTables();
     void createTable(const char*);
     bool dropTable(const char*);
-    void salveaza();
-    void incarca();
+    void salveaza(Tabela*);
+    void incarca(char*);
     friend ostream& operator<<(ostream&, const BazaDeDate&);
     friend istream& operator>>(istream&, BazaDeDate&);
 };

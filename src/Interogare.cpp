@@ -15,7 +15,7 @@ int Interogare::detectTip() {
         strcmp(parametrii[1], "table") == 0)
         return TIP_DROP;
 
-    // select student / select student 2
+    
     if (strcmp(parametrii[0], "select") == 0)
         return TIP_SELECT;
 
@@ -184,15 +184,23 @@ void Interogare::executa(BazaDeDate& baza) {
         
         if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return; }
         baza.createTable(parametrii[2]);
+        baza.salveaza(baza.getTabela(parametrii[2]));
         break;
     }
 
     case TIP_DROP: {
         
         if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return; }
-        bool ok = baza.dropTable(parametrii[2]);
-        if (ok) cout << "Tabela stearsa!" << '\n';
-        else cout << "Tabela nu exista!" << '\n';
+        char numeFisier[200];
+        strcpy(numeFisier, parametrii[2]);
+        strcat(numeFisier, ".bin");
+        if (std::filesystem::exists(numeFisier)) {
+            std::filesystem::remove(numeFisier);
+            cout << "Tabela a fost stearsa cu succes!\n";
+        }
+        else {
+            cout << "Tabela nu exista! \n";
+        }
         break;
     }
 
@@ -205,9 +213,11 @@ void Interogare::executa(BazaDeDate& baza) {
         if (nrParametrii < 2) { cout << "Comanda invalida!" << '\n'; return; }
         Tabela* t{};
         if (nrParametrii == 3) {
+            baza.incarca(parametrii[1]);
             t = baza.getTabela(parametrii[1]);
         }
         else {
+            baza.incarca(parametrii[3]);
             t = baza.getTabela(parametrii[3]);
         }
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
@@ -279,10 +289,12 @@ void Interogare::executa(BazaDeDate& baza) {
         
         if (nrParametrii < 4) { cout << "Comanda invalida!" << '\n'; return; }
         const char* numeTabela = parametrii[1];
+        baza.incarca(parametrii[1]);
         Tabela* t = baza.getTabela(numeTabela);
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
         t->addColumn(parametrii[4], parametrii[6]);
         cout << "Coloana adaugata!" << '\n';
+        baza.salveaza(t);
         break;
     }
 
@@ -292,17 +304,20 @@ void Interogare::executa(BazaDeDate& baza) {
             cout << "Comanda invalida!" << '\n'; 
             return; 
         }
+        baza.incarca(parametrii[1]);
         const char* numeTabela = parametrii[1];
         Tabela* t = baza.getTabela(numeTabela);
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
         t->removeColumn(parametrii[4]);
         cout << "Coloana stearsa!" << '\n';
+        baza.salveaza(t);
         break;
     }
 
     case TIP_INSERT: {
         
         if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return; }
+        baza.incarca(parametrii[2]);
         const char* numeTabela = parametrii[2];
         Tabela* t = baza.getTabela(numeTabela);
         if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return; }
@@ -342,28 +357,9 @@ void Interogare::executa(BazaDeDate& baza) {
         
         
         cout << "Rand inserat!" << '\n';
-        
+        baza.salveaza(t);
         break;
     }
-
-
-    /*case TIP_WHERE: {
-        
-        if (nrParametrii < 3) {
-            cout << "Comanda invalida" << "\n";
-            return;
-        }
-        const char* numeTabela = parametrii[0] + 2;
-        const char* numeColoana = parametrii[2];
-        const char* op = parametrii[3];
-        const char* valoare = parametrii[4];
-        Tabela* t = baza.getTabela(numeTabela);
-        if (t == nullptr) {
-            cout << "Tabela inexistenta!";
-        }
-        t->selectRand(numeColoana, op, valoare);
-        break;
-    }*/
 
 
     case TIP_SHOW_TABLES: {
@@ -381,6 +377,7 @@ void Interogare::executa(BazaDeDate& baza) {
                 conditie = 1;
             }
         }
+        baza.incarca(parametrii[2]);
         Tabela* tabela = baza.getTabela(parametrii[2]);
         if (tabela == nullptr) {
             cout << "Tabela nu exista \n";
@@ -390,15 +387,18 @@ void Interogare::executa(BazaDeDate& baza) {
         tabela->purgeTable(conditie);
         cout << "Datele din tabela " << nume << " au fost sterse\n";
         delete[] nume;
+        baza.salveaza(tabela);
         break;
     }
 
 
     case TIP_DELETE: {
         // delete from tableName where ID == ...
+        baza.incarca(parametrii[2]);
         Tabela* t = baza.getTabela(parametrii[2]);
         int index = t->getIndex(parametrii[6]);
         t->setDeleted(index);
+        baza.salveaza(t);
         break;
     }
 
@@ -408,7 +408,7 @@ void Interogare::executa(BazaDeDate& baza) {
             cout << "Comanda UPDATE invalida! Sintaxa: update <tabela> set <col> = <valoare / operator> [;<col2> = <expr2> ...] [where <conditie>]\n";
             return;
         }
-
+        baza.incarca(parametrii[1]);
         Tabela* tabela = baza.getTabela(parametrii[1]);
         if (tabela == nullptr) {
             cout << "Tabela nu exista!\n";
@@ -504,11 +504,13 @@ void Interogare::executa(BazaDeDate& baza) {
         catch (const runtime_error& e) {
             cout << "Eroare in timpul actualizarii datelor: " << e.what() << '\n';
         }
+        baza.salveaza(tabela);
         break;
     }
 
 
     case TIP_DESCRIBE: {
+        baza.incarca(parametrii[2]);
         Tabela* t = baza.getTabela(parametrii[2]);
         if (t != nullptr) { t->describeTable(); }
         else { cout << "Tabela nu exista\n"; }
@@ -517,6 +519,7 @@ void Interogare::executa(BazaDeDate& baza) {
 
     case TIP_JOIN: {
         // join tabel1.id on tabel2.id
+        
         char* copieParametru1 = new char[strlen(parametrii[1]) + 1];
         strcpy(copieParametru1, parametrii[1]);
         char* copieParametru2 = new char[strlen(parametrii[3]) + 1];
@@ -524,10 +527,10 @@ void Interogare::executa(BazaDeDate& baza) {
 
         char* numeTabel1 = strtok(copieParametru1, ".");
         char* numeColoana1 = strtok(NULL, ".");
-        
+        baza.incarca(numeTabel1);
         char* numeTabel2 = strtok(copieParametru2, ".");
         char* numeColoana2 = strtok(NULL, ".");
-
+        baza.incarca(numeTabel2);
         Tabela* tabela1 = baza.getTabela(numeTabel1);
         Tabela* tabela2 = baza.getTabela(numeTabel2);
 
@@ -544,9 +547,11 @@ void Interogare::executa(BazaDeDate& baza) {
 
 
     case TIP_RESTORE: {
+        baza.incarca(parametrii[2]);
         Tabela* t = baza.getTabela(parametrii[2]);
         t->restoreDeletedRow(parametrii[3]);
         cout << "Randul sters a fost restaurat. \n";
+        baza.salveaza(t);
         break;
     }
 
@@ -581,6 +586,9 @@ void Interogare::executa(BazaDeDate& baza) {
         cout << "Update rand:" << '\n';
         cout << "  aplicatie.exe update <numeTabel> set <coloana> = <valoare / operatie> [where ....]" << '\n';
         cout << "  Operatori: 'like', toti operatorii aritmetici " << '\n';
+        cout << '\n';
+        cout << "Join tabele" << '\n';
+        cout << "  aplicatie.exe join <numeTabel>.<numeCol> on <numeTabel2>.<numeCol2>" << '\n';
         cout << '\n';
         cout << "Stergere tabela:" << '\n';
         cout << "  aplicatie.exe drop table <numeTabel>" << '\n';

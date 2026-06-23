@@ -4,6 +4,7 @@
 #include <exception>
 #include <cstring>
 #include <stdexcept>
+#include <filesystem>
 #include "BazaDeDate.h"
 //using namespace std;
 using std::vector, std::string, std::ostream, std::istream, std::runtime_error, std::cout;
