@@ -24,7 +24,7 @@ add_executable (SQLSimulatorCMake
 	src/Rand.cpp
 	src/Tabela.cpp
 	src/Conditie.cpp
-)
+    src/ResultSet.cpp)
 
 target_include_directories(SQLSimulatorCMake PRIVATE include)
 

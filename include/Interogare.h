@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <filesystem>
 #include "BazaDeDate.h"
+#include "ResultSet.h"
 //using namespace std;
 using std::vector, std::string, std::ostream, std::istream, std::runtime_error, std::cout;
 constexpr auto TIP_INVALID = 0;

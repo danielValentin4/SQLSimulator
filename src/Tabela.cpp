@@ -449,6 +449,29 @@ void Tabela::insertRand(const Rand& r) {
 
 }
 
+void Tabela::checkTipRand(Rand r)
+{
+    for (int i = 0; i < coloane.size(); i++) {
+        TipData tip = *((coloane[i].getTip()));
+        if (tip == TipData::Numar) {
+            try {
+                std::stof(r[i]);
+            }
+            catch (...) {
+                throw runtime_error("Ati inserat un string pe o coloana de tip numar.\n");
+            }
+        }
+        if (tip == TipData::Data) {
+            try {
+                convertDate(r[i]);
+            }
+            catch (...) {
+                throw runtime_error("Ati inserat o data cu format gresit. \n");
+            }
+        }
+    }
+}
+
 
 
 void Tabela::purgeTable(int conditie) {
@@ -482,8 +505,16 @@ int Tabela::findSlot() {
     return -1;
 }
 
-int Tabela::getNrRanduri() {
+int Tabela::getNrRanduri() const {
     return (int)coloane[0];
+}
+
+string Tabela::getNumeColoana(int index) const
+{
+    char* numeCol = coloane[index].getNume();
+    string numeColoana = numeCol;
+    delete[] numeCol;
+    return numeColoana;
 }
 
 bool Tabela::isDeleted(int index) {

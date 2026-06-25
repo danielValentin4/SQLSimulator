@@ -225,10 +225,15 @@ void Interogare::executa(BazaDeDate& baza) {
             // afiseaza randul cu indexul dat
             int index = atoi(parametrii[2]);
             try {
-                
-                Rand r = t->getRand(index);
-               
-                cout << r;
+                vector<string> columns;
+                columns.reserve(t->getNrColoane());
+                for (size_t i = 0; i < t->getNrColoane(); i++) {
+                    columns.emplace_back(t->getNumeColoana(i));
+                }
+                vector<Rand> row;
+                row.emplace_back(t->getRand(index));
+                ResultSet rs = ResultSet(columns, row);
+                cout << rs;
             }
             catch (...) {
                 cout << "Index invalid!" << '\n';
@@ -253,8 +258,10 @@ void Interogare::executa(BazaDeDate& baza) {
                     }
                 }
                 else {
-                    cout << *t;
-                    t->afisareMap();
+                    //cout << *t;
+                    //t->afisareMap();
+                    ResultSet resultSet = ResultSet(*t);
+                    cout << resultSet;
                 }
             }
             else {
@@ -271,15 +278,22 @@ void Interogare::executa(BazaDeDate& baza) {
                 coloane.reserve(columns.size());
                 for (auto col : columns) {
                     coloane.emplace_back(t->getColoana(col.c_str()));
-                    cout << col << "\t";
+                    //cout << col << "\t";
                 }
-                cout << "\n";
+                //cout << "\n";
+                vector<string> values;
+                vector<Rand> rows;
                 for (int i = 0; i < t->getNrRanduri(); i++) {
                     for (auto c : coloane) {
-                        cout << (*c)[i] << "\t";
+                       // cout << (*c)[i] << "\t";
+                        values.emplace_back((*c)[i]);
                     }
-                    cout << "\n";
+                    //cout << "\n";
+                    Rand r = Rand(0, move(values));
+                    rows.emplace_back(r);
                 }
+                ResultSet rs = ResultSet(columns, rows);
+                cout << rs;
             }
         }
         break;
@@ -353,10 +367,14 @@ void Interogare::executa(BazaDeDate& baza) {
             valori.emplace_back(parametrii[i + 3]);
         }
         Rand r(0, valori);
-        t->insertRand(r);
-        
-        
-        cout << "Rand inserat!" << '\n';
+        try {
+            t->checkTipRand(r);
+            t->insertRand(r);
+            cout << "Rand inserat!" << '\n';
+        }
+        catch (runtime_error e) {
+            cout << e.what() << '\n';
+        }
         baza.salveaza(t);
         break;
     }
@@ -535,8 +553,8 @@ void Interogare::executa(BazaDeDate& baza) {
         Tabela* tabela2 = baza.getTabela(numeTabel2);
 
         Tabela tabelaJoin = Tabela::joinTables(tabela1, tabela2, numeColoana1, numeColoana2);
-        
-        cout << tabelaJoin;
+        ResultSet rs = ResultSet(tabelaJoin);
+        cout << rs;
 
 
         delete[] copieParametru1;

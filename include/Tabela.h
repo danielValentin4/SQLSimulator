@@ -42,6 +42,7 @@ public:
     void addColumn(const char*, const char*);
     void removeColumn(const char*);
     void insertRand(const Rand&);
+    void checkTipRand(Rand);
     //void selectRand(const char*, const char*, const char*);
     void selectRand(const NodConditie*);
     //int updateRand(const char*, const char*, const char*, const char*, const char*);
@@ -50,7 +51,8 @@ public:
     void addMap(string, int);
     int getIndex(string);
     int findSlot();
-    int getNrRanduri();
+    int getNrRanduri() const;
+    string getNumeColoana(int) const;
     bool isDeleted(int);
     bool isDeleted(int) const;
     void setDeleted(int index);
