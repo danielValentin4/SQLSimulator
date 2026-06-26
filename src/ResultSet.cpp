@@ -41,6 +41,17 @@ int ResultSet::getNrRanduri() const {
 	return randuri.size();
 }
 
+string ResultSet::getValue(int indexRand, int indexColoana)
+{
+	if (indexRand >= 0 && indexRand < randuri.size()) {
+		Rand row = randuri.at(indexRand);
+		return row[indexColoana];
+	}
+	else {
+		throw runtime_error("Index invalid");
+	}
+}
+
 Rand ResultSet::operator[](int index) const {
 	if (index >= 0 && index < randuri.size()) return randuri.at(index);
 	throw runtime_error("Index invalid");

@@ -28,7 +28,7 @@ public:
     bool operator!();
     bool operator<(const BazaDeDate&);
     Tabela* getTabela(const char*);
-    void showTables();
+    void showLoadedTables();
     void createTable(const char*);
     bool dropTable(const char*);
     void salveaza(Tabela*);

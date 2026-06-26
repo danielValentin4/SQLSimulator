@@ -123,9 +123,11 @@ char* Tabela::getNumeTabela() const {
 Coloana* Tabela::getColoana(const char* nume) {
     for (size_t i = 0; i < coloane.size(); i++) {
         char* numeCol = coloane[i].getNume();
-        if (strcmp(numeCol, nume) == 0)
+        if (strcmp(numeCol, nume) == 0) {
+            delete[] numeCol;
             return &coloane[i];
-        delete[] numeCol;
+        }
+        
     }
     return nullptr;
 }
@@ -288,23 +290,18 @@ string evalueazaExpresieUpdate(const ExpresieUpdate* expresie, Tabela* t, int in
 }
 
 
-void Tabela::selectRand(const NodConditie* conditie) {
-   
-    for (size_t i = 0; i < coloane.size(); i++) {
-        char* nume = coloane[i].getNume();
-        cout << nume << "\t";
-        delete[] nume;
-    }
-    cout << "\n";
-
+vector<Rand> Tabela::selectRows(const NodConditie* conditie)
+{
+    vector<Rand> rows;
     int nrRanduri = coloane.empty() ? 0 : int(coloane[0]);
+    rows.reserve(nrRanduri);
     for (int i = 0; i < nrRanduri; i++) {
         if (deleted[i] == true) { continue; }
         if (evalueazaConditie(conditie, this, i)) {
-            cout << getRand(i);
+            rows.emplace_back(getRand(i));
         }
     }
-
+    return rows;
 }
 
 
@@ -404,7 +401,9 @@ void Tabela::removeColumn(const char* nume) {
     coloane = temp;*/
     if (nume == nullptr) return;
     for (size_t i = 0; i < coloane.size(); i++) {
-        if (strcmp(coloane[i].getNume(), nume) == 0) {
+        char* numeCol = coloane[i].getNume();
+        if (strcmp(numeCol, nume) == 0) {
+            delete[] numeCol;
             coloane.erase(coloane.begin() + i);
             return;
         }
@@ -517,6 +516,18 @@ string Tabela::getNumeColoana(int index) const
     return numeColoana;
 }
 
+vector<string> Tabela::getNumeColoane() const {
+    vector<string> columns;
+    columns.reserve(getNrColoane());
+    for (size_t i = 0; i < getNrColoane(); i++) {
+        char* numeCol = coloane[i].getNume();
+        string numeColoana = numeCol;
+        delete[] numeCol;
+        columns.emplace_back(numeColoana);
+    }
+    return columns;
+}
+
 bool Tabela::isDeleted(int index) {
     return deleted[index];
 }
@@ -596,10 +607,18 @@ Tabela Tabela::joinTables(Tabela* tabela1, Tabela* tabela2, char* coloana1, char
     }
     auto index = makeIndex(tabela2, coloana2);
     for (int i = 0; i < tabela1->coloane.size(); i++) {
-        t.addColumn(tabela1->coloane[i].getNume(), tabela1->coloane[i].getTipData());
+        char* numeCol = tabela1->coloane[i].getNume();
+        char* tip = tabela1->coloane[i].getTipData();
+        t.addColumn(numeCol, tip);
+        delete[] numeCol;
+        delete[] tip;
     }
     for (int i = 0; i < tabela2->coloane.size(); i++) {
-        t.addColumn(tabela2->coloane[i].getNume(), tabela2->coloane[i].getTipData());
+        char* numeCol = tabela2->coloane[i].getNume();
+        char* tip = tabela2->coloane[i].getTipData();
+        t.addColumn(numeCol, tip);
+        delete[] numeCol;
+        delete[] tip;
     }
 
     for (int i = 0; i < nrRanduri1; i++) {

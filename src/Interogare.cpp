@@ -52,6 +52,11 @@ int Interogare::detectTip() {
         strcmp(parametrii[1], "tables") == 0)
         return TIP_SHOW_TABLES;
 
+    if (strcmp(parametrii[0], "show") == 0 &&
+        strcmp(parametrii[1], "loaded") == 0 &&
+        strcmp(parametrii[2], "tables") == 0)
+        return TIP_LOADED_TABLES;
+
     if (strcmp(parametrii[0], "purge") == 0 &&
         strcmp(parametrii[1], "table") == 0 &&
         nrParametrii > 2)
@@ -225,11 +230,7 @@ void Interogare::executa(BazaDeDate& baza) {
             // afiseaza randul cu indexul dat
             int index = atoi(parametrii[2]);
             try {
-                vector<string> columns;
-                columns.reserve(t->getNrColoane());
-                for (size_t i = 0; i < t->getNrColoane(); i++) {
-                    columns.emplace_back(t->getNumeColoana(i));
-                }
+                vector<string> columns = t->getNumeColoane();
                 vector<Rand> row;
                 row.emplace_back(t->getRand(index));
                 ResultSet rs = ResultSet(columns, row);
@@ -250,7 +251,10 @@ void Interogare::executa(BazaDeDate& baza) {
                         try {
                             size_t pos = 0;
                             auto arbore = parseExpr(tokens, pos);
-                            t->selectRand(arbore.get());
+                            auto rows = t->selectRows(arbore.get());
+                            vector<string> columns = t->getNumeColoane();
+                            ResultSet rs = ResultSet(columns, rows);
+                            cout << rs;
                         }
                         catch (runtime_error& e) {
                             cout << e.what() << '\n';
@@ -381,7 +385,19 @@ void Interogare::executa(BazaDeDate& baza) {
 
 
     case TIP_SHOW_TABLES: {
-        baza.showTables();
+        vector<string> numeTabele;
+        for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::current_path())) {
+            numeTabele.push_back(entry.path().stem().string());
+        }
+        cout << "Tabele: \n";
+        for (auto nume : numeTabele) {
+            cout << nume << "\n";
+        }
+        break;
+    }
+
+    case TIP_LOADED_TABLES: {
+        baza.showLoadedTables();
         break;
     }
 

@@ -100,7 +100,7 @@ Tabela* BazaDeDate::getTabela(const char* nume) {
 }
 
 
-void BazaDeDate::showTables() {
+void BazaDeDate::showLoadedTables() {
     cout << "Tabele: \n";
     for (size_t i = 0; i < tabele.size(); i++) {
         char* nume = tabele[i].getNumeTabela();

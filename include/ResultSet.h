@@ -12,6 +12,7 @@ public:
 	ResultSet& operator=(const ResultSet&);
 	int getNrColoane() const;
 	int getNrRanduri() const;
+	string getValue(int,int);
 	Rand operator[](int) const;
 	vector<string> getNumeColoane() const;
 	friend ostream& operator<<(ostream&, const ResultSet&);

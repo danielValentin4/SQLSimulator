@@ -44,7 +44,7 @@ public:
     void insertRand(const Rand&);
     void checkTipRand(Rand);
     //void selectRand(const char*, const char*, const char*);
-    void selectRand(const NodConditie*);
+    vector<Rand> selectRows(const NodConditie*);
     //int updateRand(const char*, const char*, const char*, const char*, const char*);
     int updateRand(const vector<std::pair<string, unique_ptr<ExpresieUpdate>>>&, const NodConditie*);
     void purgeTable(int);
@@ -53,6 +53,7 @@ public:
     int findSlot();
     int getNrRanduri() const;
     string getNumeColoana(int) const;
+    vector<string> getNumeColoane() const;
     bool isDeleted(int);
     bool isDeleted(int) const;
     void setDeleted(int index);

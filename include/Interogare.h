@@ -25,6 +25,7 @@ constexpr auto TIP_UPDATE = 12;
 constexpr auto TIP_DESCRIBE = 13;
 constexpr auto TIP_JOIN = 14;
 constexpr auto TIP_RESTORE = 15;
+constexpr auto TIP_LOADED_TABLES = 16;
 
 class Interogare {
 private:
