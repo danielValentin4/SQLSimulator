@@ -5,11 +5,13 @@ class ResultSet {
 private:
 	vector<string> numeColoane;
 	vector<Rand> randuri;
+	string message = "";
 public:
 	ResultSet();
 	ResultSet(const Tabela&);
 	ResultSet(vector<string>, vector<Rand>);
 	ResultSet(const ResultSet&);
+	ResultSet(string);
 	ResultSet& operator=(const ResultSet&);
 	int getNrColoane() const;
 	int getNrRanduri() const;

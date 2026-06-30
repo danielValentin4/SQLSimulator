@@ -6,6 +6,7 @@ BazaDeDate::BazaDeDate() : idBaza(0) {
     denumireBaza = new char[strlen("N/A") + 1];
     strcpy(denumireBaza, "N/A");
     tabele.reserve(5);
+    cacheTables.reserve(5);
     BazaDeDate::bazeDeDateCreate++;
 }
 
@@ -18,6 +19,7 @@ BazaDeDate::BazaDeDate(const char* denumireBaza, vector<Tabela> tabele, int idBa
         this->denumireBaza = new char[strlen("N/A") + 1];
         strcpy(this->denumireBaza, "N/A");
     }
+    cacheTables.reserve(5);
     BazaDeDate::bazeDeDateCreate++;
 }
 
@@ -30,6 +32,7 @@ BazaDeDate::BazaDeDate(const BazaDeDate& b) : idBaza(b.idBaza), tabele(b.tabele)
         this->denumireBaza = new char[strlen("N/A") + 1];
         strcpy(this->denumireBaza, "N/A");
     }
+    cacheTables.reserve(5);
     BazaDeDate::bazeDeDateCreate++;
 }
 
@@ -50,6 +53,7 @@ BazaDeDate& BazaDeDate::operator=(const BazaDeDate& b) {
             strcpy(this->denumireBaza, "N/A");
         }
         tabele = b.tabele;
+        cacheTables = b.cacheTables;
     }
     return *this;
 }
@@ -100,13 +104,16 @@ Tabela* BazaDeDate::getTabela(const char* nume) {
 }
 
 
-void BazaDeDate::showLoadedTables() {
-    cout << "Tabele: \n";
+string BazaDeDate::showLoadedTables() {
+    //cout << "Tabele: \n";
+    string mesaj = "";
     for (size_t i = 0; i < tabele.size(); i++) {
         char* nume = tabele[i].getNumeTabela();
-        cout << nume << "\n";
+        //cout << nume << "\n";
+        mesaj =mesaj + nume + "\n";
         delete[] nume;
     }
+    return mesaj;
 }
 
 void BazaDeDate::createTable(const char* nume) {
@@ -206,6 +213,7 @@ void BazaDeDate::salveaza(Tabela* t) {
 }
 
 void BazaDeDate::incarca(char* numeTabela) {
+    if (cacheTables.count(numeTabela) == 1) return;
     char numeFisier[200];
     strcpy(numeFisier, numeTabela);
     strcat(numeFisier, ".bin");
@@ -255,6 +263,7 @@ void BazaDeDate::incarca(char* numeTabela) {
     for (int k = 0; k < nrRanduriDeleted; k++) {
         tabele[tabele.size() - 1].addMap(cols[0][k], k);
     }
+    cacheTables[numeTabela] = tabele[tabele.size() - 1];
     delete[] numeT;
     f.close();
 }

@@ -25,7 +25,7 @@ void Client::read() {
 	auto self = shared_from_this();
 	asio::async_read(socket, asio::buffer(bufferSize, 4),
 		asio::bind_executor(strand,
-			[this, self](asio::error_code ec, size_t) {
+			[this, self](asio::error_code ec, size_t bytes) {
 				if (ec) { std::cerr << "Read error \n"; return; }
 				//uint32_t size = ntohl(*reinterpret_cast<uint32_t*>(bufferSize));
 				uint32_t netSize;
@@ -40,7 +40,7 @@ void Client::readPayload(uint32_t size) {
 	payLoadBuffer.resize(size);
 	asio::async_read(socket, asio::buffer(payLoadBuffer),
 		asio::bind_executor(strand,
-			[this, self](asio::error_code ec, size_t) {
+			[this, self](asio::error_code ec, size_t bytes) {
 				if (ec) { std::cerr << "Payload error \n"; return; }
 				ResultSet rs = ResultSet::deserialize(payLoadBuffer.data(), payLoadBuffer.size());
 				std::cout << rs;
@@ -83,6 +83,7 @@ void Client::send(const vector<string>& args) {
 }
 
 int main() {
+	std::cout.setf(std::ios::unitbuf);
 	asio::io_context io;
 	auto client = std::make_shared<Client>(io);
 	client->start("127.0.0.1", "5000");

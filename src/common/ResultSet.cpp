@@ -22,12 +22,17 @@ ResultSet::ResultSet(const Tabela& t)
 
 ResultSet::ResultSet(vector<string> numeCol, vector<Rand> rand) : numeColoane(numeCol), randuri(rand) {}
 
-ResultSet::ResultSet(const ResultSet& result) : numeColoane(result.numeColoane), randuri(result.randuri) {}
+ResultSet::ResultSet(const ResultSet& result) : numeColoane(result.numeColoane), randuri(result.randuri) { this->message = result.message; }
+
+ResultSet::ResultSet(string message) {
+	this->message = message;
+}
 ResultSet& ResultSet::operator=(const ResultSet& r) 
 {
 	if (this != &r) {
 		this->numeColoane = r.numeColoane;
 		this->randuri = r.randuri;
+		this->message = r.message;
 	}
 	return *this;
 }
@@ -142,6 +147,7 @@ vector<Rand> readRows(const uint8_t* data, size_t& offset) {
 vector<uint8_t> serialize(const ResultSet& rs)
 {
 	vector<uint8_t> buffer;
+	writeStringRS(buffer, rs.message);
 	writeStringVectorRS(buffer, rs.numeColoane);
 	writeRowVectorRS(buffer, rs.randuri);
 	return buffer;
@@ -173,38 +179,52 @@ ResultSet ResultSet::deserialize(const uint8_t* data, size_t size)
 		return vector;
 		};
 
+	string message = readString();
 	vector<string> numeColoane = readColumns();
 	vector<Rand> randuri = readRows(data, offset);
-	ResultSet rs{ numeColoane, randuri };
-	return rs;
+	if (message == "") {
+		ResultSet rs{ numeColoane, randuri };
+		return rs;
+	}
+	else {
+		ResultSet rs{ message };
+		return rs;
+	}
+	/*ResultSet rs{ numeColoane, randuri };
+	return rs;*/
 }
 
 
 
 ostream& operator<<(ostream& out, const ResultSet& r)
 {
-	if (r.numeColoane.size() == 0) { out << "Tabela goala! \n"; return out; }
-	auto width = calculareWidth(r);
+	if (r.message == "") {
+		if (r.numeColoane.size() == 0) { out << "Tabela goala! \n"; return out; }
+		auto width = calculareWidth(r);
 
-	size_t nrLinii = 1;
-	for (auto w : width) {
-		nrLinii += w + 3;
-	}
-	string separator(nrLinii, '-');
-	out << separator << '\n';
-
-	for (size_t i = 0; i < r.numeColoane.size(); i++) {
-		out << "| " << std::left << std::setw(width[i]) << r.numeColoane[i] << " ";
-	}
-
-	out << "| \n";
-	out << separator << "\n";
-	for (size_t i = 0; i < r.randuri.size(); i++) {
-		Rand rand = r.randuri[i];
-		for (size_t j = 0; j < r.numeColoane.size(); j++) {
-			out << "| " << std::left << std::setw(width[j]) << rand[j] << " ";
+		size_t nrLinii = 1;
+		for (auto w : width) {
+			nrLinii += w + 3;
 		}
-		out << "|" << "\n" << separator << "\n";
+		string separator(nrLinii, '-');
+		out << separator << '\n';
+
+		for (size_t i = 0; i < r.numeColoane.size(); i++) {
+			out << "| " << std::left << std::setw(width[i]) << r.numeColoane[i] << " ";
+		}
+
+		out << "| \n";
+		out << separator << "\n";
+		for (size_t i = 0; i < r.randuri.size(); i++) {
+			Rand rand = r.randuri[i];
+			for (size_t j = 0; j < r.numeColoane.size(); j++) {
+				out << "| " << std::left << std::setw(width[j]) << rand[j] << " ";
+			}
+			out << "|" << "\n" << separator << "\n";
+		}
+	}
+	else {
+		out << r.message;
 	}
 	return out;
 }

@@ -187,27 +187,29 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
 
     case TIP_CREATE: {
         
-        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return ResultSet(); }
+        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return ResultSet("Comanda invalida!\n"); }
         baza.createTable(parametrii[2]);
         baza.salveaza(baza.getTabela(parametrii[2]));
-        return ResultSet();
+        return ResultSet("Tabela a fost creata!\n");
         break;
     }
 
     case TIP_DROP: {
         
-        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return ResultSet(); }
+        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return ResultSet("Comanda invalida!\n"); }
         char numeFisier[200];
         strcpy(numeFisier, parametrii[2]);
         strcat(numeFisier, ".bin");
         if (std::filesystem::exists(numeFisier)) {
             std::filesystem::remove(numeFisier);
             cout << "Tabela a fost stearsa cu succes!\n";
+            return ResultSet("Tabela a fost stearsa cu succes!\n");
         }
         else {
             cout << "Tabela nu exista! \n";
+            return ResultSet("Tabela nu exista! \n");
         }
-        return ResultSet();
+        
         break;
     }
 
@@ -217,7 +219,7 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         // select Nume,Varsta from student
         // select * from student where ...
         
-        if (nrParametrii < 2) { cout << "Comanda invalida!" << '\n'; return ResultSet(); }
+        if (nrParametrii < 2) { cout << "Comanda invalida!" << '\n'; return ResultSet("Comanda invalida!\n"); }
         Tabela* t{};
         if (nrParametrii == 3) {
             baza.incarca(parametrii[1]);
@@ -227,7 +229,7 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
             baza.incarca(parametrii[3]);
             t = baza.getTabela(parametrii[3]);
         }
-        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return ResultSet(); }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return ResultSet("Tabela nu exista!\n"); }
         if (nrParametrii == 3) {
             // afiseaza randul cu indexul dat
             int index = atoi(parametrii[2]);
@@ -241,6 +243,7 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
             }
             catch (...) {
                 cout << "Index invalid!" << '\n';
+                return ResultSet("Index invalid!\n");
             }
         }
         else if (nrParametrii > 3) {
@@ -308,15 +311,15 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
 
     case TIP_ADD: {
         
-        if (nrParametrii < 4) { cout << "Comanda invalida!" << '\n'; return ResultSet(); }
+        if (nrParametrii < 4) { cout << "Comanda invalida!" << '\n'; return ResultSet("Comanda invalida!\n"); }
         const char* numeTabela = parametrii[1];
         baza.incarca(parametrii[1]);
         Tabela* t = baza.getTabela(numeTabela);
-        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return ResultSet(); }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return ResultSet("Tabela nu exista!\n"); }
         t->addColumn(parametrii[4], parametrii[6]);
         cout << "Coloana adaugata!" << '\n';
         baza.salveaza(t);
-        return ResultSet();
+        return ResultSet("Coloana adaugata!\n");
         break;
     }
 
@@ -324,26 +327,26 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         
         if (nrParametrii < 4) { 
             cout << "Comanda invalida!" << '\n'; 
-            return ResultSet(); 
+            return ResultSet("Comanda invalida!\n");
         }
         baza.incarca(parametrii[1]);
         const char* numeTabela = parametrii[1];
         Tabela* t = baza.getTabela(numeTabela);
-        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return ResultSet(); }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return ResultSet("Tabela nu exista!\n"); }
         t->removeColumn(parametrii[4]);
         cout << "Coloana stearsa!" << '\n';
         baza.salveaza(t);
-        return ResultSet();
+        return ResultSet("Coloana stearsa!\n");
         break;
     }
 
     case TIP_INSERT: {
         
-        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return ResultSet(); }
+        if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return ResultSet("Comanda invalida!\n"); }
         baza.incarca(parametrii[2]);
         const char* numeTabela = parametrii[2];
         Tabela* t = baza.getTabela(numeTabela);
-        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return ResultSet(); }
+        if (t == nullptr) { cout << "Tabela nu exista!" << '\n'; return ResultSet("Tabela nu exista!\n"); }
 
         int nrValori = nrParametrii - 3; 
         vector<string> valori;
@@ -360,13 +363,13 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
             }
             catch (...) {
                 cout << "ID-ul furnizat nu este numeric. \n";
-                return ResultSet();
+                return ResultSet("ID-ul furnizat nu este numeric.\n");
             }
 
             auto map = t->getMap();
             if (map.find(parametrii[3]) != map.end()) {
                 cout << "ID-ul deja exista in tabela. \n";
-                return ResultSet();
+                return ResultSet("ID-ul deja exista in tabela. \n");
             }
             else {
                 valori.emplace_back(parametrii[3]);
@@ -380,12 +383,15 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
             t->checkTipRand(r);
             t->insertRand(r);
             cout << "Rand inserat!" << '\n';
+            baza.salveaza(t);
+            return ResultSet("Rand inserat!\n");
+            break;
         }
         catch (runtime_error e) {
             cout << e.what() << '\n';
         }
-        baza.salveaza(t);
-        return ResultSet();
+        
+        return ResultSet("Nu a putut fi inserat randul!\n");
         break;
     }
 
@@ -396,22 +402,28 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
             numeTabele.push_back(entry.path().stem().string());
         }
         cout << "Tabele: \n";
+        string mesaj = "";
         for (auto nume : numeTabele) {
             cout << nume << "\n";
+            mesaj = mesaj + nume + "\n";
+               
         }
-        return ResultSet();
+        return ResultSet(mesaj);
         break;
     }
 
     case TIP_LOADED_TABLES: {
-        baza.showLoadedTables();
-        return ResultSet();
+        string mesaj = baza.showLoadedTables();
+        if (mesaj == "") return ResultSet("Nu exista tabele incarcate momentan.\n");
+        //cout << mesaj;
+        return ResultSet(mesaj);
         break;
     }
-
+                          
     case TIP_PURGE_TABLE: {
         if (nrParametrii < 3 || nrParametrii > 4) {
             cout << "Comanda invalida\n";
+            return ResultSet("Comanda invalida \n");
         }
         int conditie = 0;
         if (nrParametrii == 4) {
@@ -423,14 +435,14 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         Tabela* tabela = baza.getTabela(parametrii[2]);
         if (tabela == nullptr) {
             cout << "Tabela nu exista \n";
-            return ResultSet();
+            return ResultSet("Tabela nu exista \n");
         }
         char* nume = tabela->getNumeTabela();
         tabela->purgeTable(conditie);
         cout << "Datele din tabela " << nume << " au fost sterse\n";
-        delete[] nume;
         baza.salveaza(tabela);
-        return ResultSet();
+        return ResultSet(std::format("Datele din tabela {:} au fost sterse\n", nume));
+        delete[] nume;
         break;
     }
 
@@ -442,7 +454,7 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         int index = t->getIndex(parametrii[6]);
         t->setDeleted(index);
         baza.salveaza(t);
-        return ResultSet();
+        return ResultSet("Randul a fost sters. \n");
         break;
     }
 
@@ -450,18 +462,18 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
     case TIP_UPDATE: {
         if (nrParametrii < 6) {
             cout << "Comanda UPDATE invalida! Sintaxa: update <tabela> set <col> = <valoare / operator> [;<col2> = <expr2> ...] [where <conditie>]\n";
-            return ResultSet();
+            return ResultSet("Comanda UPDATE invalida! Sintaxa: update <tabela> set <col> = <valoare / operator> [;<col2> = <expr2> ...] [where <conditie>]\n");
         }
         baza.incarca(parametrii[1]);
         Tabela* tabela = baza.getTabela(parametrii[1]);
         if (tabela == nullptr) {
             cout << "Tabela nu exista!\n";
-            return ResultSet();
+            return ResultSet("Tabela nu exista!\n");
         }
 
         if (strcmp(parametrii[2], "set") != 0) {
             cout << "Comanda UPDATE invalida! Lipseste cuvantul cheie 'set'.\n";
-            return ResultSet();
+            return ResultSet("Comanda UPDATE invalida! Lipseste cuvantul cheie 'set'.\n");
         }
 
         
@@ -518,7 +530,7 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         }
         catch (const runtime_error& e) {
             cout << "Eroare la parsarea setarilor: " << e.what() << '\n';
-            return ResultSet();
+            return ResultSet(std::format("Eroare la parsarea setarilor: {:} \n", e.what()));
         }
 
         
@@ -535,7 +547,7 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
                 }
                 catch (const runtime_error& e) {
                     cout << "Eroare la parsarea clauzei WHERE: " << e.what() << '\n';
-                    return ResultSet();
+                    return ResultSet(std::format("Eroare la parsarea clauzei WHERE : {:} \n", e.what()));
                 }
             }
         }
@@ -544,12 +556,15 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         try {
             int nrActualizari = tabela->updateRand(setari, arboreConditie.get());
             cout << "Au fost realizate " << nrActualizari << " actualizari." << '\n';
+            baza.salveaza(tabela);
+            return ResultSet(std::format("Au fost realizate {:} actualizari\n", nrActualizari));
         }
         catch (const runtime_error& e) {
             cout << "Eroare in timpul actualizarii datelor: " << e.what() << '\n';
+            return ResultSet(std::format("Eroare in timpul actualizarii datelor: {:} \n", e.what()));
         }
-        baza.salveaza(tabela);
-        return ResultSet();
+        
+        
         break;
     }
 
@@ -557,9 +572,11 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
     case TIP_DESCRIBE: {
         baza.incarca(parametrii[2]);
         Tabela* t = baza.getTabela(parametrii[2]);
-        if (t != nullptr) { t->describeTable(); }
-        else { cout << "Tabela nu exista\n"; }
-        return ResultSet();
+        if (t != nullptr) { string mesaj = t->describeTable(); cout << mesaj; return ResultSet(mesaj); }
+        else {
+            cout << "Tabela nu exista\n";
+            return ResultSet("Tabela nu exista \n");
+        }
         break;
     }
 
@@ -598,74 +615,77 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         t->restoreDeletedRow(parametrii[3]);
         cout << "Randul sters a fost restaurat. \n";
         baza.salveaza(t);
-        return ResultSet();
+        return ResultSet("Randul sters a fost restaurat. \n");
         break;
     }
 
 
     case TIP_HELP: {
-        cout << "===============================================" << '\n';
-        cout << "         SQLSimulator - Comenzi disponibile   " << '\n';
-        cout << "===============================================" << '\n';
-        cout << '\n';
-        cout << "Creare tabela:" << '\n';
-        cout << "  aplicatie.exe create table <numeTabel>" << '\n';
-        cout << '\n';
-        cout << "Adaugare coloana:" << '\n';
-        cout << "  aplicatie.exe alter <numeTabel> add column <numeColoana> as date/number/string" << '\n';
-        cout << '\n';
-        cout << "Stergere coloana:" << '\n';
-        cout << "  aplicatie.exe alter <numeTabel> remove column <numeColoana>" << '\n';
-        cout << '\n';
-        cout << "Inserare rand:" << '\n';
-        cout << "  aplicatie.exe insert into <numeTabel> <id [--]> <val1> <val2> ..." << '\n';
-        cout << '\n';
-        cout << "Afisare tabela completa:" << '\n';
-        cout << "  aplicatie.exe select <numeTabel>" << '\n';
-        cout << '\n';
-        cout << "Afisare rand specific:" << '\n';
-        cout << "  aplicatie.exe select <numeTabel> <index>" << '\n';
-        cout << '\n';
-        cout << "Afisare rand cu clauze:" << '\n';
-        cout << "  aplicatie.exe select <numeTabel> where <coloana> <operator> <conditie> [AND/OR] ...." << '\n';
-        cout << "  Operatori: 'like', toti operatorii aritmetici " << '\n';
-        cout << '\n';
-        cout << "Update rand:" << '\n';
-        cout << "  aplicatie.exe update <numeTabel> set <coloana> = <valoare / operatie> [where ....]" << '\n';
-        cout << "  Operatori: 'like', toti operatorii aritmetici " << '\n';
-        cout << '\n';
-        cout << "Join tabele" << '\n';
-        cout << "  aplicatie.exe join <numeTabel>.<numeCol> on <numeTabel2>.<numeCol2>" << '\n';
-        cout << '\n';
-        cout << "Stergere tabela:" << '\n';
-        cout << "  aplicatie.exe drop table <numeTabel>" << '\n';
-        cout << '\n';
-        cout << "Stergere rand:" << '\n';
-        cout << "  aplicatie.exe delete from <numeTabel> where ID == <valoare>" << '\n';
-        cout << '\n';
-        cout << "Afisare toate tabelele:" << '\n';
-        cout << "  aplicatie.exe show tables" << '\n';
-        cout << '\n';
-        cout << "Stergere totala a datelor din o tabela:" << '\n';
-        cout << "  aplicatie.exe purge table <numeTabel> [--full]" << '\n';
-        cout << '\n';
-        cout << "Restaurarea unui rand dintr-o tabela:" << '\n';
-        cout << "  aplicatie.exe restore from <numeTabel> [ID]" << '\n';
-        cout << '\n';
-        cout << "Ajutor:" << '\n';
-        cout << "  aplicatie.exe --help" << '\n';
-        cout << "===============================================" << '\n';
-        return ResultSet();
+        string mesaj =
+            "===============================================\n"
+            "         SQLSimulator - Comenzi disponibile   \n"
+            "===============================================\n"
+            "\n"
+            "Creare tabela:\n"
+            "  aplicatie.exe create table <numeTabel>\n"
+            "\n"
+            "Adaugare coloana:\n"
+            "  aplicatie.exe alter <numeTabel> add column <numeColoana> as date/number/string\n"
+            "\n"
+            "Stergere coloana:\n"
+            "  aplicatie.exe alter <numeTabel> remove column <numeColoana>\n"
+            "\n"
+            "Inserare rand:\n"
+            "  aplicatie.exe insert into <numeTabel> <id [--]> <val1> <val2> ...\n"
+            "\n"
+            "Afisare tabela completa:\n"
+            "  aplicatie.exe select <numeTabel>\n"
+            "\n"
+            "Afisare rand specific:\n"
+            "  aplicatie.exe select <numeTabel> <index>\n"
+            "\n"
+            "Afisare rand cu clauze:\n"
+            "  aplicatie.exe select <numeTabel> where <coloana> <operator> <conditie> [AND/OR] ....\n"
+            "  Operatori: 'like', toti operatorii aritmetici \n"
+            "\n"
+            "Update rand:\n"
+            "  aplicatie.exe update <numeTabel> set <coloana> = <valoare / operatie> [where ....]\n"
+            "  Operatori: 'like', toti operatorii aritmetici \n"
+            "\n"
+            "Join tabele\n"
+            "  aplicatie.exe join <numeTabel>.<numeCol> on <numeTabel2>.<numeCol2>\n"
+            "\n"
+            "Stergere tabela:\n"
+            "  aplicatie.exe drop table <numeTabel>\n"
+            "\n"
+            "Stergere rand:\n"
+            "  aplicatie.exe delete from <numeTabel> where ID == <valoare>\n"
+            "\n"
+            "Afisare toate tabelele:\n"
+            "  aplicatie.exe show tables\n"
+            "\n"
+            "Stergere totala a datelor din o tabela:\n"
+            "  aplicatie.exe purge table <numeTabel> [--full]\n"
+            "\n"
+            "Restaurarea unui rand dintr-o tabela:\n"
+            "  aplicatie.exe restore from <numeTabel> [ID]\n"
+            "\n"
+            "Ajutor:\n"
+            "  aplicatie.exe --help\n"
+            "===============================================\n";
+
+        cout << mesaj;
+        return ResultSet(mesaj);
         break;
     }
 
     default:
-        return ResultSet();
+        return ResultSet("Comanda necunoscuta!\n");
         cout << "Comanda necunoscuta!" << '\n';
         break;
     }
     
-    return ResultSet();
+    return ResultSet("Comanda necunoscuta!");
 }
 
 ostream& operator<<(ostream& out, const Interogare& i) {

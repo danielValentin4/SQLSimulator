@@ -31,7 +31,6 @@ int main(int argc, char* argv[]) {
         cout << i;
     }
     else i.executa(baza);*/
-    
     asio::io_context io;
     asio::thread_pool dbPool(4);
 

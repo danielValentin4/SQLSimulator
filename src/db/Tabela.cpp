@@ -567,15 +567,18 @@ void Tabela::afisareMap()
 
 }
 
-void Tabela::describeTable()
+string Tabela::describeTable()
 {
+    string mesaj = "";
     for (size_t i = 0; i < coloane.size(); i++) {
         char* nume = coloane[i].getNume();
         char* tip = coloane[i].getTipData();
         cout << nume << " - " << tip << "\n";
+        mesaj = mesaj + nume + "-" + tip + "\n";
         delete[] nume;
         delete[] tip;
     }
+    return mesaj;
 
 
 

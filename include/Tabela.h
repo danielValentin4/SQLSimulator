@@ -61,7 +61,7 @@ public:
     void setMap(unordered_map<string, int>);
     unordered_map<string, int> getMap();
     void afisareMap();
-    void describeTable();
+    string describeTable();
     static Tabela joinTables(Tabela*, Tabela*, char* , char*);
     friend ostream& operator<<(ostream&,const Tabela&);
     friend istream& operator>>(istream&, Tabela&);

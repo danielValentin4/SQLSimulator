@@ -26,7 +26,7 @@ void Session::write(const ResultSet& rs) {
 
 	asio::async_write(_socket, asio::buffer(*buf),
 		asio::bind_executor(strand,
-			[this, self, buf](asio::error_code ec, size_t) {
+			[this, self, buf](asio::error_code ec, size_t bytesWritten) {
 				if (ec) std::cout << "Eroare la scrierea rezultatului \n";
 				read();
 			}));

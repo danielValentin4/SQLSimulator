@@ -13,6 +13,7 @@ private:
     //Tabela* tabele;
     //int nrTabele;
     vector<Tabela> tabele;
+    unordered_map<string, Tabela> cacheTables;
     char* denumireBaza;
     const int idBaza;
     static int bazeDeDateCreate;
@@ -28,7 +29,7 @@ public:
     bool operator!();
     bool operator<(const BazaDeDate&);
     Tabela* getTabela(const char*);
-    void showLoadedTables();
+    string showLoadedTables();
     void createTable(const char*);
     bool dropTable(const char*);
     void salveaza(Tabela*);
