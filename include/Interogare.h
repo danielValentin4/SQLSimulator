@@ -44,6 +44,6 @@ public:
     char* operator[](int);
     bool operator!();
     bool operator==(const Interogare&);
-    void executa(BazaDeDate&);
+    ResultSet executa(BazaDeDate&);
     friend ostream& operator<<(ostream&, const Interogare&);
 };

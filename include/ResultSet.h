@@ -1,3 +1,4 @@
+#pragma once
 #include "Tabela.h"
 
 class ResultSet {
@@ -17,5 +18,7 @@ public:
 	vector<string> getNumeColoane() const;
 	friend ostream& operator<<(ostream&, const ResultSet&);
 	friend vector<size_t> calculareWidth(const ResultSet&);
+	friend vector<uint8_t> serialize(const ResultSet&);
+	static ResultSet deserialize(const uint8_t*, size_t);
 };
 

@@ -1,7 +1,7 @@
 ﻿# CMakeList.txt : CMake project for SQLSimulatorCMake, include source and define
 # project specific logic here.
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.14)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -14,20 +14,40 @@ project ("SQLSimulatorCMake")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
+include(FetchContent)
+FetchContent_Declare(
+	asiocmake
+	GIT_REPOSITORY "https://github.com/OlivierLDff/asio.cmake"
+	GIT_TAG "main"
+)
+FetchContent_MakeAvailable(asiocmake)
 # Add source to this project's executable.
 add_executable (SQLSimulatorCMake
 	src/main.cpp
-	src/BazaDeDate.cpp
-	src/Coloana.cpp
-	src/Interogare.cpp
-	src/Rand.cpp
-	src/Tabela.cpp
-	src/Conditie.cpp
-    src/ResultSet.cpp)
+	src/db/BazaDeDate.cpp
+	src/db/Coloana.cpp
+	src/db/Interogare.cpp
+	src/db/Rand.cpp
+	src/db/Tabela.cpp
+	src/db/Conditie.cpp
+    src/common/ResultSet.cpp
+	src/networking/Server.cpp
+	src/networking/Session.cpp
+)
 
+add_executable(client 
+	src/networking/Client.cpp
+	src/common/ResultSet.cpp
+	src/db/Rand.cpp 
+	src/db/Coloana.cpp 
+	src/db/Tabela.cpp
+)
+
+find_package(Threads REQUIRED)
 target_include_directories(SQLSimulatorCMake PRIVATE include)
-
+target_link_libraries(SQLSimulatorCMake PRIVATE asio::asio Threads::Threads)
+target_include_directories(client PRIVATE include)
+target_link_libraries(client PRIVATE asio::asio Threads::Threads)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET SQLSimulatorCMake PROPERTY CXX_STANDARD 20)

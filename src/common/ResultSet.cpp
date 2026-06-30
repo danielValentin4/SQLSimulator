@@ -75,6 +75,112 @@ vector<size_t> calculareWidth(const ResultSet& resultSet)
 	return width;
 }
 
+
+void writeBytesRS(vector<uint8_t>& buffer, const void* data, size_t size) {
+	const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data);
+	buffer.insert(buffer.end(), ptr, ptr + size);
+}
+
+void writeStringRS(vector<uint8_t>& buffer, const std::string& s) {
+	uint32_t len = s.size();
+	writeBytesRS(buffer, &len, 4);
+	writeBytesRS(buffer, s.data(), len);
+}
+
+void writeStringVectorRS(vector<uint8_t>& buffer, const vector<string>& vector) {
+	uint32_t count = vector.size();
+	writeBytesRS(buffer, &count, 4);
+	for (const auto& s : vector) {
+		writeStringRS(buffer, s);
+	}
+}
+
+void writeRowVectorRS(vector<uint8_t>& buffer, const vector<Rand>& vector) {
+	uint32_t count = vector.size();
+	writeBytesRS(buffer, &count, 4);
+	for (const auto& r : vector) {
+		uint32_t numberOfElements = (int)r;
+		writeBytesRS(buffer, &numberOfElements, 4);
+		for (size_t i = 0; i < numberOfElements; i++) {
+			writeStringRS(buffer, r[i]);
+		}
+	}
+}
+
+
+Rand readRow(const uint8_t* data, size_t& offset) {
+	uint32_t count;
+	memcpy(&count, data + offset, 4);
+	offset += 4;
+	vector<string> date;
+	date.reserve(count);
+	for (uint32_t i = 0; i < count; i++) {
+		uint32_t len;
+		memcpy(&len, data + offset, 4);
+		offset += 4;
+		string s(reinterpret_cast<const char*>(data + offset), len);
+		offset += len;
+		date.emplace_back(move(s));
+	}
+
+	return Rand(0, move(date));
+}
+
+vector<Rand> readRows(const uint8_t* data, size_t& offset) {
+	uint32_t count;
+	memcpy(&count, data + offset, 4);
+	offset += 4;
+	vector<Rand> rows;
+	rows.reserve(count);
+	for (uint32_t i = 0; i < count; i++) {
+		rows.emplace_back(readRow(data, offset));
+	}
+	return rows;
+}
+
+
+vector<uint8_t> serialize(const ResultSet& rs)
+{
+	vector<uint8_t> buffer;
+	writeStringVectorRS(buffer, rs.numeColoane);
+	writeRowVectorRS(buffer, rs.randuri);
+	return buffer;
+}
+
+ResultSet ResultSet::deserialize(const uint8_t* data, size_t size)
+{
+	size_t offset = 0;
+	auto readU32 = [&]() {
+		uint32_t value;
+		memcpy(&value, data + offset, 4);
+		offset += 4;
+		return value;
+		};
+
+	auto readString = [&]() {
+		uint32_t len = readU32();
+		string s(reinterpret_cast<const char*>(data + offset), len);
+		offset += len;
+		return s;
+		};
+
+	auto readColumns = [&]() {
+		uint32_t count = readU32();
+		vector<string> vector;
+		for (uint32_t i = 0; i < count; i++) {
+			vector.push_back(readString());
+		}
+		return vector;
+		};
+
+	vector<string> numeColoane = readColumns();
+	vector<Rand> randuri = readRows(data, offset);
+	ResultSet rs{ numeColoane, randuri };
+	return rs;
+}
+
+
+
 ostream& operator<<(ostream& out, const ResultSet& r)
 {
 	if (r.numeColoane.size() == 0) { out << "Tabela goala! \n"; return out; }

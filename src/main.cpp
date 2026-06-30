@@ -4,6 +4,7 @@
 #include "Rand.h"
 #include "BazaDeDate.h"
 #include "Interogare.h"
+#include "Server.h"
 
 
 
@@ -24,13 +25,27 @@ int main(int argc, char* argv[]) {
         std::filesystem::create_directory("mydb");
     }
     
-    Interogare i(argv, argc);
+    /*Interogare i(argv, argc);
     if (!i) {
         cout << "Comanda invalida!" << "\n";
         cout << i;
     }
-    else i.executa(baza);
+    else i.executa(baza);*/
     
+    asio::io_context io;
+    asio::thread_pool dbPool(4);
+
+    Server server(io, dbPool, 5000, baza);
+    unsigned int n = std::thread::hardware_concurrency();
+    vector<std::thread> threads;
+    threads.reserve(n);
+    for (unsigned int i = 0; i < n; i++) {
+        threads.emplace_back([&io] { io.run();});
+    }
     
+    for (auto& t : threads) {
+        t.join();
+    }
+    dbPool.join();
 	return 0;
 }
