@@ -452,6 +452,9 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         baza.incarca(parametrii[2]);
         Tabela* t = baza.getTabela(parametrii[2]);
         int index = t->getIndex(parametrii[6]);
+        if (index == -1) {
+            return ResultSet("Indexul nu exista.\n");
+        }
         t->setDeleted(index);
         baza.salveaza(t);
         return ResultSet("Randul a fost sters. \n");

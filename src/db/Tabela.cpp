@@ -491,7 +491,10 @@ void Tabela::addMap(string key, int index) {
 }
 
 int Tabela::getIndex(string key) {
-    return mapID[key];
+    if (mapID.count(key) == 1) {
+        return mapID[key];
+    }
+    return -1;
 }
 
 int Tabela::findSlot() {

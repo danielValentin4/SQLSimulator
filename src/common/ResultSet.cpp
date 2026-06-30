@@ -16,7 +16,9 @@ ResultSet::ResultSet(const Tabela& t)
 	}
 
 	for (int i = 0; i < t.getNrRanduri(); i++) {
-		randuri.emplace_back(t.getRand(i));
+		if (!t.isDeleted(i)) {
+			randuri.emplace_back(t.getRand(i));
+		}
 	}
 }
 
