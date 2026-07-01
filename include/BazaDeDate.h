@@ -5,26 +5,27 @@
 #include <exception>
 #include <cstring>
 #include <stdexcept>
+#include <list>
 #include "Tabela.h"
+
+constexpr auto MAX_CAPACITY = 20;
 //using namespace std;
 using std::ofstream, std::ifstream, std::ios;
 class BazaDeDate {
 private:
     //Tabela* tabele;
     //int nrTabele;
-    vector<Tabela> tabele;
-    unordered_map<string, Tabela> cacheTables;
+    std::list<Tabela> tabele;
+    unordered_map<string, std::list<Tabela>::iterator> cacheTables;
     char* denumireBaza;
     const int idBaza;
     static int bazeDeDateCreate;
 public:
     BazaDeDate();
-    BazaDeDate(const char*, vector<Tabela> , int);
+    BazaDeDate(const char*, std::list<Tabela>, int);
     BazaDeDate(const BazaDeDate&);
     ~BazaDeDate();
     BazaDeDate& operator=(const BazaDeDate&);
-    Tabela& operator[](int);
-    BazaDeDate operator+(const Tabela&);
     bool operator==(const BazaDeDate&) const;
     bool operator!();
     bool operator<(const BazaDeDate&);
@@ -34,6 +35,5 @@ public:
     bool dropTable(const char*);
     void salveaza(Tabela*);
     void incarca(char*);
-    friend ostream& operator<<(ostream&, const BazaDeDate&);
-    friend istream& operator>>(istream&, BazaDeDate&);
+    bool doesTableExist(const char*);
 };

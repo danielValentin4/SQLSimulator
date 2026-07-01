@@ -188,6 +188,10 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
     case TIP_CREATE: {
         
         if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return ResultSet("Comanda invalida!\n"); }
+        if (baza.doesTableExist(parametrii[2])) {
+            return ResultSet("Tabela exista deja! \n");
+            break;
+        }
         baza.createTable(parametrii[2]);
         baza.salveaza(baza.getTabela(parametrii[2]));
         return ResultSet("Tabela a fost creata!\n");
@@ -198,6 +202,7 @@ ResultSet Interogare::executa(BazaDeDate& baza) {
         
         if (nrParametrii < 3) { cout << "Comanda invalida!" << '\n'; return ResultSet("Comanda invalida!\n"); }
         char numeFisier[200];
+        baza.dropTable(parametrii[2]);
         strcpy(numeFisier, parametrii[2]);
         strcat(numeFisier, ".bin");
         if (std::filesystem::exists(numeFisier)) {

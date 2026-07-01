@@ -5,12 +5,12 @@ int BazaDeDate::bazeDeDateCreate = 0;
 BazaDeDate::BazaDeDate() : idBaza(0) {
     denumireBaza = new char[strlen("N/A") + 1];
     strcpy(denumireBaza, "N/A");
-    tabele.reserve(5);
+    //tabele.reserve(5);
     cacheTables.reserve(5);
     BazaDeDate::bazeDeDateCreate++;
 }
 
-BazaDeDate::BazaDeDate(const char* denumireBaza, vector<Tabela> tabele, int idBaza) : idBaza(idBaza), tabele(tabele) {
+BazaDeDate::BazaDeDate(const char* denumireBaza, std::list<Tabela> tabele, int idBaza) : idBaza(idBaza), tabele(tabele) {
     if (denumireBaza != nullptr) {
         this->denumireBaza = new char[strlen(denumireBaza) + 1];
         strcpy(this->denumireBaza, denumireBaza);
@@ -58,25 +58,6 @@ BazaDeDate& BazaDeDate::operator=(const BazaDeDate& b) {
     return *this;
 }
 
-Tabela& BazaDeDate::operator[](int index) {
-    if (index >= 0 && index < tabele.size()) return tabele.at(index);
-    throw runtime_error("Index invalid");
-}
-
-BazaDeDate BazaDeDate::operator+(const Tabela& t) {
-    BazaDeDate copie = *this;
-    /*Tabela* temp = new Tabela[copie.nrTabele + 1];
-    for (int i = 0; i < copie.nrTabele; i++)
-        temp[i] = copie.tabele[i];
-    temp[copie.nrTabele] = t;
-    delete[] copie.tabele;
-    copie.tabele = temp;
-    copie.nrTabele++;*/
-    
-    copie.tabele.emplace_back(t);
-    
-    return copie;
-}
 
 bool BazaDeDate::operator==(const BazaDeDate& b) const {
     if (strcmp(denumireBaza, b.denumireBaza) != 0) return false;
@@ -92,53 +73,51 @@ bool BazaDeDate::operator<(const BazaDeDate& b) {
 }
 
 Tabela* BazaDeDate::getTabela(const char* nume) {
-    for (size_t i = 0; i < tabele.size(); i++) {
-        char* n = tabele[i].getNumeTabela();
-        if (strcmp(n, nume) == 0) {
-            delete[] n;
-            return &tabele[i];
-        }
-        delete[] n;
+    if (cacheTables.find(nume) == cacheTables.end()) {
+        return nullptr;
     }
-    return nullptr;
+    auto it = cacheTables[nume];
+    Tabela* t = &(*it);
+    tabele.splice(tabele.begin(), tabele, it);
+    return t;
 }
 
 
 string BazaDeDate::showLoadedTables() {
-    //cout << "Tabele: \n";
     string mesaj = "";
-    for (size_t i = 0; i < tabele.size(); i++) {
-        char* nume = tabele[i].getNumeTabela();
-        //cout << nume << "\n";
-        mesaj =mesaj + nume + "\n";
+    for (auto i = tabele.cbegin(); i != tabele.cend(); i++) {
+        char* nume = (*i).getNumeTabela();
+        mesaj = mesaj + nume + "\n";
         delete[] nume;
     }
     return mesaj;
 }
 
 void BazaDeDate::createTable(const char* nume) {
-    if (getTabela(nume) != nullptr) {
-        cout << "Tabela exista deja!" << '\n';
-        return;
-    }
     Tabela noua;
     noua.setNumeTabela(nume);
     noua.addColumn("ID", "number");
-    *this = *this + noua;
-   
+    tabele.emplace_front(noua);
+    cacheTables[nume] = tabele.begin();
     cout << "Tabela " << nume << " creata!" << '\n';
 }
 
+bool BazaDeDate::doesTableExist(const char* nume) {
+    if (cacheTables.find(nume) != cacheTables.end()) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 bool BazaDeDate::dropTable(const char* nume) {
-    for (size_t i = 0; i < tabele.size(); i++) {
-        char* n = tabele[i].getNumeTabela();
-        if (strcmp(n, nume) == 0) {
-            tabele.erase(tabele.begin() + i);
-            delete[] n;
-            
-            return true;
-        }
-        delete[] n;
+    auto mapIt = cacheTables.find(nume);
+    if (mapIt != cacheTables.end()) {
+        auto listIt = mapIt->second;
+        tabele.erase(listIt);
+        cacheTables.erase(mapIt);
+        return true;
     }
     return false;
 }
@@ -213,7 +192,19 @@ void BazaDeDate::salveaza(Tabela* t) {
 }
 
 void BazaDeDate::incarca(char* numeTabela) {
-    if (cacheTables.count(numeTabela) == 1) return;
+    if (cacheTables.count(numeTabela) == 1) {
+        auto it = cacheTables[numeTabela];
+        tabele.splice(tabele.begin(), tabele, it);
+        return;
+    }
+    else {
+        if (tabele.size() >= MAX_CAPACITY) {
+            char* numeTab = tabele.back().getNumeTabela();
+            cacheTables.erase(numeTab);
+            tabele.pop_back();
+            delete[] numeTab;
+        }
+    }
     char numeFisier[200];
     strcpy(numeFisier, numeTabela);
     strcat(numeFisier, ".bin");
@@ -259,41 +250,11 @@ void BazaDeDate::incarca(char* numeTabela) {
          delete[] numeC;
     }
 
-    tabele.emplace_back(numeT, cols, tabele.size() - 1, deletedVec);
+    tabele.emplace_front(numeT, cols, tabele.size() - 1, deletedVec);
     for (int k = 0; k < nrRanduriDeleted; k++) {
-        tabele[tabele.size() - 1].addMap(cols[0][k], k);
+        tabele.front().addMap(cols[0][k], k);
     }
-    cacheTables[numeTabela] = tabele[tabele.size() - 1];
+    cacheTables[numeTabela] = tabele.begin();
     delete[] numeT;
     f.close();
-}
-
-ostream& operator<<(ostream& out, const BazaDeDate& b) {
-    out << "Baza de date: " << b.denumireBaza << '\n';
-    out << "Nr tabele: " << b.tabele.size() << '\n';
-    for (size_t i = 0; i < b.tabele.size(); i++)
-        out << b.tabele[i];
-    return out;
-}
-
-istream& operator>>(istream& in, BazaDeDate& b) {
-    cout << "Denumire baza: ";
-    string buffer;
-    in >> buffer;
-    if (b.denumireBaza != nullptr) delete[] b.denumireBaza;
-    b.denumireBaza = new char[buffer.length() + 1];
-    strcpy(b.denumireBaza, buffer.c_str());
-    size_t nrTabele;
-    cout << "Nr tabele: ";
-    in >> nrTabele;
-    
-    if (nrTabele > 0) {
-        b.tabele.resize(nrTabele);
-        for (int i = 0; i < nrTabele; i++) {
-            cout << "Tabela " << i << ": ";
-            in >> b.tabele[i];
-        }
-    }
-    
-    return in;
 }

@@ -10,7 +10,7 @@
 
 
 int main(int argc, char* argv[]) {
-    vector<Tabela> tabele;
+    std::list<Tabela> tabele;
     BazaDeDate baza("mydb", tabele , 1);
     if (std::filesystem::exists("mydb")) {
         if (std::filesystem::is_directory("mydb")) {
@@ -25,12 +25,6 @@ int main(int argc, char* argv[]) {
         std::filesystem::create_directory("mydb");
     }
     
-    /*Interogare i(argv, argc);
-    if (!i) {
-        cout << "Comanda invalida!" << "\n";
-        cout << i;
-    }
-    else i.executa(baza);*/
     asio::io_context io;
     asio::thread_pool dbPool(4);
 
@@ -38,8 +32,10 @@ int main(int argc, char* argv[]) {
     unsigned int n = std::thread::hardware_concurrency();
     vector<std::thread> threads;
     threads.reserve(n);
+    std::cout << "Server pornit. \n";
     for (unsigned int i = 0; i < n; i++) {
-        threads.emplace_back([&io] { io.run();});
+        threads.emplace_back([&io] { io.run(); });
+
     }
     
     for (auto& t : threads) {
